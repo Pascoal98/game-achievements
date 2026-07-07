@@ -3,7 +3,7 @@ from app.services import steam
 
 router = APIRouter(prefix="/games", tags=["games"])
 
-@router.get("/")
+@router.get("")
 def get_games():
     try:
         return steam.get_owned_games()
