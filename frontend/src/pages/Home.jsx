@@ -8,15 +8,38 @@ export default function Home() {
     const [selectedGame, setSelectedGame] = useState(null);
 
     return (
-        <div style={{ display: 'flex', height: '100vh', fontFamily: 'system-ui, sans-serif' }}>
-            <aside style={{ width: '300px', borderRight: '1px solid #e5e7eb', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
-                    <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Your library</h1>
-                    {!loading && <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#9ca3af' }}>{games.length} games</p>}
+        <div style={{ display: 'flex', height: '100vh', background: '#0f0f13' }}>
+            {/* Sidebar */}
+            <aside style={{
+                width: '260px',
+                flexShrink: 0,
+                borderRight: '1px solid #1e1e2e',
+                display: 'flex',
+                flexDirection: 'column',
+                background: '#0c0c11',
+            }}>
+                <div style={{ padding: '20px 16px 12px' }}>
+                    <h1 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#7c6af7', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        Your library
+                    </h1>
+                    {!loading && (
+                        <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#3a3a48' }}>
+                            {games.length} games
+                        </p>
+                    )}
                 </div>
-                <GameList games={games} selectedId={selectedGame?.appid} onSelect={setSelectedGame} loading={loading} error={error} />
+                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <GameList
+                        games={games}
+                        selectedId={selectedGame?.appid}
+                        onSelect={setSelectedGame}
+                        loading={loading}
+                        error={error}
+                    />
+                </div>
             </aside>
 
+            {/* Main panel */}
             <main style={{ flex: 1, overflow: 'hidden' }}>
                 <AchievementPanel game={selectedGame} />
             </main>

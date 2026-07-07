@@ -8,25 +8,36 @@ export default function GameCard({ game, selected, onClick }) {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            padding: '12px 16px',
+            padding: '10px 16px',
             cursor: 'pointer',
-            borderBottom: '1px solid #e5e7eb',
-            backgroundColor: selected ? '#f0f9ff' : 'white',
-            transition: 'background 0.15s',
-        }}>
+            background: selected ? '#1e1e2e' : 'transparent',
+            borderLeft: selected ? '3px solid #7c6af7' : '3px solid transparent',
+            transition: 'all 0.15s',
+        }}
+            onMouseEnter={e => { if (!selected) e.currentTarget.style.background = '#16161f'; }}
+            onMouseLeave={e => { if (!selected) e.currentTarget.style.background = 'transparent'; }}
+        >
             <img
                 src={`${IMG_BASE}/${game.appid}/${game.img_icon_url}.jpg`}
                 alt={game.name}
-                width={40}
-                height={40}
-                style={{ borderRadius: '6px', flexShrink: 0 }}
+                width={36}
+                height={36}
+                style={{ borderRadius: '6px', flexShrink: 0, objectFit: 'cover' }}
                 onError={e => { e.target.style.display = 'none'; }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 500, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p style={{
+                    margin: 0,
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    color: selected ? '#c4b9ff' : '#d0d0da',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                }}>
                     {game.name}
                 </p>
-                <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: '#5a5a6e', marginTop: '2px' }}>
                     {hours}h played
                 </p>
             </div>
