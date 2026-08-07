@@ -72,11 +72,15 @@ def get_all_achievements_summary() -> list[dict]:
     summary = []
     for game in games:
         app_id = game["appid"]
-        data = get_game_achievements(app_id)
-        summary.append({
-            "appid": app_id,
-            "unlocked": data["unlocked"],
-            "total": data["total"],
-            "has_achievements": data["has_achievements"],
-        })
+        try:
+            data = get_game_achievements(app_id)
+            summary.append({
+                "appid": app_id,
+                "unlocked": data["unlocked"],
+                "total": data["total"],
+                "has_achievements": data["has_achievements"],
+            })
+        except Exception:
+            # Skip games with transient failures; continue with remaining games
+            continue
     return summary
