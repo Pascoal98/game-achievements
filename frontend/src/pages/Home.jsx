@@ -1,47 +1,53 @@
 import { useState } from 'react';
 import GameList from '../components/GameList';
 import AchievementPanel from '../components/AchievementPanel';
+import LibraryOverview from '../components/LibraryOverview';
 import { useGames } from '../hooks/useGames';
+import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
 
 export default function Home() {
     const { games, loading, error } = useGames();
+    const { summary, loading: summaryLoading } = useAchievementsSummary();
     const [selectedGame, setSelectedGame] = useState(null);
 
     return (
-        <div style={{ display: 'flex', height: '100vh', background: '#0f0f13' }}>
-            {/* Sidebar */}
-            <aside style={{
-                width: '260px',
-                flexShrink: 0,
-                borderRight: '1px solid #1e1e2e',
-                display: 'flex',
-                flexDirection: 'column',
-                background: '#0c0c11',
-            }}>
-                <div style={{ padding: '20px 16px 12px' }}>
-                    <h1 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#7c6af7', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div className="flex h-screen bg-bg-app">
+            <aside
+                className={`w-full flex-shrink-0 flex-col border-r border-border-faint bg-bg-sidebar md:flex md:w-[260px] ${
+                    selectedGame ? 'hidden' : 'flex'
+                }`}
+            >
+                <div className="px-4 pb-3 pt-5">
+                    <h1 className="m-0 text-sm font-semibold uppercase tracking-wider text-accent">
                         Your library
                     </h1>
                     {!loading && (
-                        <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#3a3a48' }}>
+                        <p className="m-0 mt-0.5 text-[11px] text-text-faint">
                             {games.length} games
                         </p>
                     )}
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div className="flex flex-1 flex-col overflow-hidden">
                     <GameList
                         games={games}
                         selectedId={selectedGame?.appid}
                         onSelect={setSelectedGame}
                         loading={loading}
                         error={error}
+                        summary={summary}
+                        summaryLoading={summaryLoading}
                     />
                 </div>
             </aside>
 
-            {/* Main panel */}
-            <main style={{ flex: 1, overflow: 'hidden' }}>
-                <AchievementPanel game={selectedGame} />
+            <main
+                className={`relative flex-1 overflow-hidden md:block ${selectedGame ? 'block' : 'hidden'}`}
+            >
+                {selectedGame ? (
+                    <AchievementPanel game={selectedGame} onBack={() => setSelectedGame(null)} />
+                ) : (
+                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} />
+                )}
             </main>
         </div>
     );
