@@ -1,5 +1,9 @@
+import time
 import requests
 from app.config import settings
+
+_achievements_cache: dict[int, tuple[float, dict]] = {}
+_CACHE_TTL_SECONDS = 600
 
 def get_owned_games() -> list:
     url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -26,12 +30,18 @@ def get_game_schema(app_id: int) -> dict:
     return {a["name"]: {"display_name": a.get("displayName", ""), "description": a.get("description", "")} for a in achievements}
 
 def get_game_achievements(app_id: int) -> dict:
+    cached = _achievements_cache.get(app_id)
+    if cached and time.time() - cached[0] < _CACHE_TTL_SECONDS:
+        return cached[1]
+
     url = "http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/"
     params = {"appid": app_id, "key": settings.steam_api_key, "steamid": settings.steam_id}
     r = requests.get(url, params=params)
 
     if r.status_code == 400:
-        return {"has_achievements": False, "achievements": [], "unlocked": 0, "total": 0}
+        result = {"has_achievements": False, "achievements": [], "unlocked": 0, "total": 0}
+        _achievements_cache[app_id] = (time.time(), result)
+        return result
     r.raise_for_status()
 
     achievements = r.json().get("playerstats", {}).get("achievements", [])
@@ -44,13 +54,29 @@ def get_game_achievements(app_id: int) -> dict:
         enriched.append({
             "apiname": name,
             "achieved": a.get("achieved", 0),
-            "display_name": meta.get("display_name") or name,  # fallback to apiname
+            "display_name": meta.get("display_name") or name,
             "description": meta.get("description", ""),
         })
 
-    return {
+    result = {
         "has_achievements": True,
         "achievements": enriched,
         "unlocked": sum(1 for a in achievements if a.get("achieved") == 1),
         "total": len(achievements),
     }
+    _achievements_cache[app_id] = (time.time(), result)
+    return result
+
+def get_all_achievements_summary() -> list[dict]:
+    games = get_owned_games()
+    summary = []
+    for game in games:
+        app_id = game["appid"]
+        data = get_game_achievements(app_id)
+        summary.append({
+            "appid": app_id,
+            "unlocked": data["unlocked"],
+            "total": data["total"],
+            "has_achievements": data["has_achievements"],
+        })
+    return summary

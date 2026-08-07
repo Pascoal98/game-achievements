@@ -16,3 +16,10 @@ def get_achievements(app_id: int):
         return steam.get_game_achievements(app_id)
     except Exception:
         raise HTTPException(status_code=502, detail="Steam API error")
+
+@router.get("/achievements-summary")
+def get_achievements_summary():
+    try:
+        return steam.get_all_achievements_summary()
+    except Exception:
+        raise HTTPException(status_code=502, detail="Steam API error")
