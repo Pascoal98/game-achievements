@@ -11,3 +11,9 @@ export const fetchAchievements = (appId) =>
         if (!r.ok) throw new Error('Failed to fetch achievements');
         return r.json();
     });
+
+export const fetchAchievementsSummary = () =>
+    fetch(`${BASE}/games/achievements-summary`).then(r => {
+        if (!r.ok) throw new Error('Failed to fetch achievements summary');
+        return r.json();
+    });
