@@ -1,19 +1,5 @@
 import { useAchievements } from '../hooks/useAchievements';
-
-function StatPill({ label, value, color }) {
-    return (
-        <div style={{
-            background: '#16161f',
-            border: '1px solid #2a2a35',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            textAlign: 'center',
-        }}>
-            <p style={{ margin: 0, fontSize: '22px', fontWeight: 600, color }}>{value}</p>
-            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#5a5a6e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-        </div>
-    );
-}
+import StatPill from './StatPill';
 
 export default function AchievementPanel({ game }) {
     const { data, loading, error } = useAchievements(game?.appid);
@@ -73,9 +59,9 @@ export default function AchievementPanel({ game }) {
 
                 {/* Stats row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
-                    <StatPill label="Unlocked" value={data.unlocked} color="#7c6af7" />
-                    <StatPill label="Locked" value={locked} color="#5a5a6e" />
-                    <StatPill label="Completion" value={`${pct}%`} color={pct === 100 ? '#34d399' : '#f59e0b'} />
+                    <StatPill label="Unlocked" value={data.unlocked} colorClassName="text-accent" />
+                    <StatPill label="Locked" value={locked} colorClassName="text-text-muted" />
+                    <StatPill label="Completion" value={`${pct}%`} colorClassName={pct === 100 ? 'text-success' : 'text-warning'} />
                 </div>
 
                 {/* Progress bar */}
