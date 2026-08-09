@@ -1,6 +1,9 @@
+import logging
 import time
 import requests
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 _achievements_cache: dict[int, tuple[float, dict]] = {}
 _CACHE_TTL_SECONDS = 600
@@ -13,7 +16,7 @@ def get_owned_games() -> list:
         "include_appinfo": True,
         "include_played_free_games": True,
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=10)
     r.raise_for_status()
     games = r.json().get("response", {}).get("games", [])
     return sorted(games, key=lambda x: x.get("playtime_forever", 0), reverse=True)
@@ -22,7 +25,7 @@ def get_game_schema(app_id: int) -> dict:
     """Fetches achievement names and descriptions for a game."""
     url = "http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/"
     params = {"appid": app_id, "key": settings.steam_api_key}
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=10)
     if r.status_code != 200:
         return {}
     achievements = r.json().get("game", {}).get("availableGameStats", {}).get("achievements", [])
@@ -36,7 +39,7 @@ def get_game_achievements(app_id: int) -> dict:
 
     url = "http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/"
     params = {"appid": app_id, "key": settings.steam_api_key, "steamid": settings.steam_id}
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=10)
 
     if r.status_code == 400:
         result = {"has_achievements": False, "achievements": [], "unlocked": 0, "total": 0}
@@ -81,6 +84,6 @@ def get_all_achievements_summary() -> list[dict]:
                 "has_achievements": data["has_achievements"],
             })
         except Exception:
-            # Skip games with transient failures; continue with remaining games
+            logger.warning("Failed to fetch achievements for app_id=%s", app_id, exc_info=True)
             continue
     return summary
