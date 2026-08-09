@@ -1,6 +1,6 @@
 import StatPill from './StatPill';
 
-export default function LibraryOverview({ games, summary, summaryLoading }) {
+export default function LibraryOverview({ games, summary, summaryLoading, summaryError }) {
     const totalGames = games.length;
     const totalHours = Math.round(
         games.reduce((sum, g) => sum + g.playtime_forever, 0) / 60
@@ -24,8 +24,8 @@ export default function LibraryOverview({ games, summary, summaryLoading }) {
                 <StatPill label="Hours played" value={totalHours} colorClassName="text-text-bright" />
                 <StatPill
                     label="Completion"
-                    value={summaryLoading ? '…' : `${completionPct}%`}
-                    colorClassName={completionPct === 100 ? 'text-success' : 'text-warning'}
+                    value={summaryError ? 'unavailable' : summaryLoading ? '…' : `${completionPct}%`}
+                    colorClassName={summaryError ? 'text-text-muted' : completionPct === 100 ? 'text-success' : 'text-warning'}
                 />
             </div>
         </div>

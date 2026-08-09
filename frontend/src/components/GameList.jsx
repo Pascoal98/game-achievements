@@ -13,7 +13,7 @@ function GameCardSkeleton() {
     );
 }
 
-export default function GameList({ games, selectedId, onSelect, loading, error, summary, summaryLoading }) {
+export default function GameList({ games, selectedId, onSelect, loading, error, summary, summaryLoading, summaryError }) {
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('playtime');
     const [onlyWithAchievements, setOnlyWithAchievements] = useState(false);
@@ -70,12 +70,13 @@ export default function GameList({ games, selectedId, onSelect, loading, error, 
                 >
                     <option value="playtime">Sort: Playtime</option>
                     <option value="name">Sort: Name</option>
-                    <option value="completion" disabled={summaryLoading}>Sort: Completion %</option>
+                    <option value="completion" disabled={summaryLoading || !!summaryError}>Sort: Completion %</option>
                 </select>
                 <label className="flex items-center gap-1.5 text-[11px] text-text-muted">
                     <input
                         type="checkbox"
                         checked={onlyWithAchievements}
+                        disabled={summaryLoading || !!summaryError}
                         onChange={e => setOnlyWithAchievements(e.target.checked)}
                     />
                     Only games with achievements

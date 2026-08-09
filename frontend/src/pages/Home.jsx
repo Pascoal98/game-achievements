@@ -7,7 +7,7 @@ import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
 
 export default function Home() {
     const { games, loading, error } = useGames();
-    const { summary, loading: summaryLoading } = useAchievementsSummary();
+    const { summary, loading: summaryLoading, error: summaryError } = useAchievementsSummary();
     const [selectedGame, setSelectedGame] = useState(null);
 
     return (
@@ -36,6 +36,7 @@ export default function Home() {
                         error={error}
                         summary={summary}
                         summaryLoading={summaryLoading}
+                        summaryError={summaryError}
                     />
                 </div>
             </aside>
@@ -44,9 +45,9 @@ export default function Home() {
                 className={`relative flex-1 overflow-hidden md:block ${selectedGame ? 'block' : 'hidden'}`}
             >
                 {selectedGame ? (
-                    <AchievementPanel game={selectedGame} onBack={() => setSelectedGame(null)} />
+                    <AchievementPanel key={selectedGame.appid} game={selectedGame} onBack={() => setSelectedGame(null)} />
                 ) : (
-                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} />
+                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} summaryError={summaryError} />
                 )}
             </main>
         </div>

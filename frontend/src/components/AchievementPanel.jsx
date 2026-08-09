@@ -33,33 +33,39 @@ export default function AchievementPanel({ game, onBack }) {
 
     if (loading) return (
         <div className="h-full p-8">
+            <button onClick={onBack} className="mb-3 block cursor-pointer text-xs text-accent md:hidden">
+                ← Back to library
+            </button>
             <AchievementSkeleton />
         </div>
     );
 
     if (error) return (
         <div className="p-8 text-sm text-error">
+            <button onClick={onBack} className="mb-3 block cursor-pointer text-xs text-accent md:hidden">
+                ← Back to library
+            </button>
             Couldn't load achievements.
         </div>
     );
 
     if (!data?.has_achievements) return (
-        <div className="flex h-full flex-col items-center justify-center gap-2 text-text-muted">
-            <button onClick={onBack} className="absolute left-4 top-4 text-xs text-accent md:hidden">
+        <div className="relative flex h-full flex-col items-center justify-center gap-2 text-text-muted">
+            <button onClick={onBack} className="absolute left-4 top-4 cursor-pointer text-xs text-accent md:hidden">
                 ← Back to library
             </button>
             <p className="text-sm">{game.name} has no achievements.</p>
         </div>
     );
 
-    const pct = Math.round((data.unlocked / data.total) * 100);
+    const pct = data.total ? Math.round((data.unlocked / data.total) * 100) : 0;
     const locked = data.total - data.unlocked;
     const hours = Math.round(game.playtime_forever / 60 * 10) / 10;
 
     return (
         <div className="flex h-full flex-col transition-opacity duration-300">
             <div className="border-b border-border-faint bg-bg-app px-8 pb-6 pt-7">
-                <button onClick={onBack} className="mb-3 block text-xs text-accent md:hidden">
+                <button onClick={onBack} className="mb-3 block cursor-pointer text-xs text-accent md:hidden">
                     ← Back to library
                 </button>
                 <div className="mb-5 flex items-center gap-4">
@@ -118,12 +124,12 @@ export default function AchievementPanel({ game, onBack }) {
                                 a.achieved ? 'bg-success-bg' : 'bg-bg-elevated'
                             }`}>
                                 {a.achieved
-                                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
-                                    : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3a3a48" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-success" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
+                                    : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-text-faint" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                                 }
                             </div>
                             <div className="min-w-0 flex-1">
-                                <span className={`block truncate text-[13px] ${a.achieved ? 'text-[#a8d5b5]' : 'text-text-faint'}`}>
+                                <span className={`block truncate text-[13px] ${a.achieved ? 'text-[#a8d5b5]' : 'text-text-locked'}`}>
                                     {a.display_name}
                                 </span>
                                 {a.description && (
