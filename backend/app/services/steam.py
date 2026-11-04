@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 _achievements_cache: dict[int, tuple[float, dict]] = {}
 _CACHE_TTL_SECONDS = 600
+_RECENT_UNLOCKS_PER_GAME = 5
 
 def get_owned_games() -> list:
     url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -30,7 +31,15 @@ def get_game_schema(app_id: int) -> dict:
         return {}
     achievements = r.json().get("game", {}).get("availableGameStats", {}).get("achievements", [])
     # Return a dict keyed by apiname for easy lookup
-    return {a["name"]: {"display_name": a.get("displayName", ""), "description": a.get("description", "")} for a in achievements}
+    return {
+        a["name"]: {
+            "display_name": a.get("displayName", ""),
+            "description": a.get("description", ""),
+            "icon": a.get("icon", ""),
+            "icongray": a.get("icongray", ""),
+        }
+        for a in achievements
+    }
 
 def get_game_achievements(app_id: int) -> dict:
     cached = _achievements_cache.get(app_id)
@@ -59,6 +68,9 @@ def get_game_achievements(app_id: int) -> dict:
             "achieved": a.get("achieved", 0),
             "display_name": meta.get("display_name") or name,
             "description": meta.get("description", ""),
+            "unlocktime": a.get("unlocktime", 0),
+            "icon": meta.get("icon", ""),
+            "icongray": meta.get("icongray", ""),
         })
 
     result = {
@@ -77,11 +89,26 @@ def get_all_achievements_summary() -> list[dict]:
         app_id = game["appid"]
         try:
             data = get_game_achievements(app_id)
+            unlocked = sorted(
+                (a for a in data["achievements"] if a["achieved"] == 1),
+                key=lambda a: a["unlocktime"],
+                reverse=True,
+            )
             summary.append({
                 "appid": app_id,
                 "unlocked": data["unlocked"],
                 "total": data["total"],
                 "has_achievements": data["has_achievements"],
+                "unlock_times": [a["unlocktime"] for a in unlocked],
+                "recent_unlocks": [
+                    {
+                        "apiname": a["apiname"],
+                        "display_name": a["display_name"],
+                        "icon": a["icon"],
+                        "unlocktime": a["unlocktime"],
+                    }
+                    for a in unlocked[:_RECENT_UNLOCKS_PER_GAME]
+                ],
             })
         except Exception:
             logger.warning("Failed to fetch achievements for app_id=%s", app_id, exc_info=True)
