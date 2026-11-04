@@ -9,11 +9,21 @@ export function playtimeTotals(games) {
     };
 }
 
+const STORES = [
+    ['steam', 'Steam'],
+    ['rpcs3', 'RPCS3'],
+];
+
 // One entry per store. Steam's per-device fields are folded into a single Steam total,
 // because older hours have no device recorded and would otherwise go missing.
 export function platformSplit(games) {
-    const split = [{ key: 'steam', label: 'Steam', minutes: sum(games, 'playtime_forever') }];
-    return split.filter(p => p.minutes > 0);
+    return STORES
+        .map(([key, label]) => ({
+            key,
+            label,
+            minutes: sum(games.filter(g => (g.source ?? 'steam') === key), 'playtime_forever'),
+        }))
+        .filter(p => p.minutes > 0);
 }
 
 export function topPlayed(games, n) {
@@ -44,10 +54,11 @@ export function completionTotals(summary) {
 }
 
 export function mergeRecentUnlocks(summary, gamesById, n) {
-    return Object.entries(summary)
-        .flatMap(([appid, item]) => (item.recent_unlocks ?? []).map(u => ({
-            appid: Number(appid),
-            gameName: gamesById[appid]?.name ?? '',
+    // Ids come from the items themselves: Steam ids are numbers, RPCS3 ids are strings like "rpcs3-BCES01284".
+    return Object.values(summary)
+        .flatMap(item => (item.recent_unlocks ?? []).map(u => ({
+            appid: item.appid,
+            gameName: gamesById[item.appid]?.name ?? '',
             ...u,
         })))
         .sort((a, b) => b.unlocktime - a.unlocktime)

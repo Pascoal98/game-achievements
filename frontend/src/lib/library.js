@@ -1,8 +1,20 @@
 const CDN = 'https://cdn.cloudflare.steamstatic.com/steam/apps';
 
-// Older titles have no vertical library art, so callers walk this list on image error.
-export function coverSources(appid) {
-    return [`${CDN}/${appid}/library_600x900.jpg`, `${CDN}/${appid}/header.jpg`];
+// Ordered fallbacks for a game's card art. Steam's portrait cover is missing for older titles,
+// and RPCS3 only has a landscape banner; non-portrait art gets a name overlay because cropping cuts its logo.
+export function coverSources(game, apiBase) {
+    if (game.source === 'rpcs3') {
+        return game.banner_url ? [{ url: `${apiBase}${game.banner_url}`, portrait: false }] : [];
+    }
+    return [
+        { url: `${CDN}/${game.appid}/library_600x900.jpg`, portrait: true },
+        { url: `${CDN}/${game.appid}/header.jpg`, portrait: false },
+    ];
+}
+
+export function backdropSource(game, apiBase) {
+    if (game.source === 'rpcs3') return game.backdrop_url ? `${apiBase}${game.backdrop_url}` : null;
+    return `${CDN}/${game.appid}/header.jpg`;
 }
 
 export function completionOf(summaryItem) {

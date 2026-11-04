@@ -33,6 +33,17 @@ test('platformSplit is empty when nothing has been played', () => {
     expect(platformSplit([{ playtime_forever: 0 }])).toEqual([]);
 });
 
+test('platformSplit separates Steam and RPCS3 playtime by source', () => {
+    const games = [
+        { source: 'steam', playtime_forever: 100 },
+        { source: 'rpcs3', playtime_forever: 789 },
+    ];
+    expect(platformSplit(games)).toEqual([
+        { key: 'steam', label: 'Steam', minutes: 100 },
+        { key: 'rpcs3', label: 'RPCS3', minutes: 789 },
+    ]);
+});
+
 test('topPlayed returns the n most played, excluding unplayed', () => {
     const games = [{ appid: 1, playtime_forever: 0 }, { appid: 2, playtime_forever: 9 }, { appid: 3, playtime_forever: 30 }, { appid: 4, playtime_forever: 20 }];
     expect(topPlayed(games, 2).map(g => g.appid)).toEqual([3, 4]);
@@ -56,9 +67,16 @@ test('completionTotals sums and counts perfect games', () => {
 
 test('mergeRecentUnlocks orders across games and respects n', () => {
     const u = (apiname, unlocktime) => ({ apiname, display_name: apiname, icon: '', unlocktime });
-    const summary = { 1: { recent_unlocks: [u('a', 30), u('b', 10)] }, 2: { recent_unlocks: [u('c', 20)] } };
+    const summary = { 1: { appid: 1, recent_unlocks: [u('a', 30), u('b', 10)] }, 2: { appid: 2, recent_unlocks: [u('c', 20)] } };
     const merged = mergeRecentUnlocks(summary, { 1: { name: 'One' } }, 2);
     expect(merged.map(m => [m.apiname, m.appid, m.gameName])).toEqual([['a', 1, 'One'], ['c', 2, '']]);
+});
+
+test('mergeRecentUnlocks keeps string ids from RPCS3 games', () => {
+    const summary = { 'rpcs3-X': { appid: 'rpcs3-X', recent_unlocks: [{ apiname: 'NPWR:1', display_name: 'Vault', icon: '', unlocktime: 5 }] } };
+    const merged = mergeRecentUnlocks(summary, { 'rpcs3-X': { name: 'Sly' } }, 8);
+    expect(merged[0].appid).toBe('rpcs3-X');
+    expect(merged[0].gameName).toBe('Sly');
 });
 
 test('mergeRecentUnlocks tolerates items without recent_unlocks', () => {

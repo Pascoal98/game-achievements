@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { coverSources, completionOf, filterAndSortGames } from './library';
+import { coverSources, backdropSource, completionOf, filterAndSortGames } from './library';
 
 const opts = (overrides) => ({ search: '', sortBy: 'playtime', onlyWithAchievements: false, ...overrides });
 
@@ -9,11 +9,25 @@ const games = [
     { appid: 3, name: 'Gamma', playtime_forever: 5, rtime_last_played: 200 },
 ];
 
-test('coverSources puts vertical cover before header', () => {
-    expect(coverSources(10)).toEqual([
-        'https://cdn.cloudflare.steamstatic.com/steam/apps/10/library_600x900.jpg',
-        'https://cdn.cloudflare.steamstatic.com/steam/apps/10/header.jpg',
+const STEAM_CDN = 'https://cdn.cloudflare.steamstatic.com/steam/apps';
+const rpcs3Game = { appid: 'rpcs3-BCES01284', source: 'rpcs3', banner_url: '/rpcs3/images/BCES01284/icon0', backdrop_url: '/rpcs3/images/BCES01284/pic1' };
+
+test('coverSources puts the Steam vertical cover before the landscape header', () => {
+    expect(coverSources({ appid: 10, source: 'steam' }, 'http://h')).toEqual([
+        { url: `${STEAM_CDN}/10/library_600x900.jpg`, portrait: true },
+        { url: `${STEAM_CDN}/10/header.jpg`, portrait: false },
     ]);
+});
+
+test('coverSources uses the backend-served banner for RPCS3 games', () => {
+    expect(coverSources(rpcs3Game, 'http://h')).toEqual([{ url: 'http://h/rpcs3/images/BCES01284/icon0', portrait: false }]);
+    expect(coverSources({ ...rpcs3Game, banner_url: null }, 'http://h')).toEqual([]);
+});
+
+test('backdropSource is the Steam header or the RPCS3 background', () => {
+    expect(backdropSource({ appid: 10, source: 'steam' }, 'http://h')).toBe(`${STEAM_CDN}/10/header.jpg`);
+    expect(backdropSource(rpcs3Game, 'http://h')).toBe('http://h/rpcs3/images/BCES01284/pic1');
+    expect(backdropSource({ ...rpcs3Game, backdrop_url: null }, 'http://h')).toBeNull();
 });
 
 test('completionOf handles missing and zero-total', () => {

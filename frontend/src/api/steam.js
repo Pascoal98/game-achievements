@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+export const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export const fetchGames = () =>
     fetch(`${BASE}/games`).then(r => {
@@ -7,7 +7,7 @@ export const fetchGames = () =>
     });
 
 export const fetchAchievements = (appId) =>
-    fetch(`${BASE}/games/${appId}/achievements`).then(r => {
+    fetch(`${BASE}/games/${encodeURIComponent(appId)}/achievements`).then(r => {
         if (!r.ok) throw new Error('Failed to fetch achievements');
         return r.json();
     });
