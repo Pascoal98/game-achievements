@@ -55,3 +55,36 @@ def make_sfo(title: str) -> bytes:
     key_table = 20 + len(index)
     header = struct.pack("<4sIIII", b"\0PSF", 0x101, key_table, key_table + len(keys), len(items))
     return header + index + keys + values
+
+
+def make_game_dir(path, title: str, sets: dict[str, bytes | None], images: bool = True):
+    """A game folder as games.yml points to it: PS3_GAME/PARAM.SFO plus one TROPDIR folder per trophy set."""
+    game = path / "PS3_GAME"
+    game.mkdir(parents=True)
+    (game / "PARAM.SFO").write_bytes(make_sfo(title))
+    if images:
+        (game / "ICON0.PNG").write_bytes(b"icon0-png")
+        (game / "PIC1.PNG").write_bytes(b"pic1-png")
+    for set_id, trp in sets.items():
+        set_dir = game / "TROPDIR" / set_id
+        set_dir.mkdir(parents=True)
+        if trp is not None:
+            (set_dir / "TROPHY.TRP").write_bytes(trp)
+    return path
+
+
+def make_install(root, games: dict[str, object], settings: str = "", trophy_dirs: dict[str, dict[str, bytes | str]] | None = None):
+    """An RPCS3 install root: config/games.yml, GuiConfigs/persistent_settings.dat and user trophy folders."""
+    (root / "config").mkdir(parents=True)
+    (root / "config" / "games.yml").write_text("".join(f"{serial}: {path}/\n" for serial, path in games.items()))
+    (root / "GuiConfigs").mkdir()
+    (root / "GuiConfigs" / "persistent_settings.dat").write_text(settings)
+    for set_id, files in (trophy_dirs or {}).items():
+        set_dir = root / "dev_hdd0" / "home" / "00000001" / "trophy" / set_id
+        set_dir.mkdir(parents=True)
+        for name, content in files.items():
+            if isinstance(content, str):
+                (set_dir / name).write_text(content)
+            else:
+                (set_dir / name).write_bytes(content)
+    return root
