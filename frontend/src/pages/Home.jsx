@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 import GameGrid from '../components/library/GameGrid';
 import SlideOver from '../components/SlideOver';
 import AchievementPanel from '../components/AchievementPanel';
 import Overview from '../components/overview/Overview';
 import { useGames } from '../hooks/useGames';
 import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
+import { initialPanelState, panelReducer, panelKey } from '../lib/panel';
 
 const VIEWS = [
     { id: 'overview', label: 'Overview' },
@@ -15,17 +16,12 @@ export default function Home() {
     const { games, loading, error } = useGames();
     const { summary, loading: summaryLoading, error: summaryError } = useAchievementsSummary();
     const [view, setView] = useState('overview');
-    const [selectedGame, setSelectedGame] = useState(null);
-    const [panelOpen, setPanelOpen] = useState(false);
+    const [panel, dispatchPanel] = useReducer(panelReducer, initialPanelState);
     // One timestamp per page load keeps every "x days ago" consistent and render pure.
     const [now] = useState(() => Date.now());
 
-    const openGame = useCallback((game) => {
-        setSelectedGame(game);
-        setPanelOpen(true);
-    }, []);
-    // Only close; keeping selectedGame lets the panel content stay visible while it slides out.
-    const closePanel = useCallback(() => setPanelOpen(false), []);
+    const openGame = useCallback((game) => dispatchPanel({ type: 'open', game }), []);
+    const closePanel = useCallback(() => dispatchPanel({ type: 'close' }), []);
 
     return (
         <div className="flex h-screen flex-col bg-bg-app">
@@ -74,9 +70,9 @@ export default function Home() {
                 )}
             </main>
 
-            <SlideOver open={panelOpen} onClose={closePanel}>
-                {selectedGame && (
-                    <AchievementPanel key={selectedGame.appid} game={selectedGame} now={now} onBack={closePanel} />
+            <SlideOver open={panel.open} onClose={closePanel}>
+                {panel.game && (
+                    <AchievementPanel key={panelKey(panel)} game={panel.game} now={now} onBack={closePanel} />
                 )}
             </SlideOver>
         </div>

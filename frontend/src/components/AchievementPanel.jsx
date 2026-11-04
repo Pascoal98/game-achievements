@@ -97,7 +97,7 @@ export default function AchievementPanel({ game, now, onBack }) {
     if (loading) {
         body = <div className="px-6 py-4 md:px-8"><AchievementSkeleton /></div>;
     } else if (error) {
-        body = <p className="px-6 py-6 text-sm text-error md:px-8">Couldn't load achievements for this game. Close the panel and try again.</p>;
+        body = <p className="px-6 py-6 text-sm text-error md:px-8">Couldn't load achievements for this game. Close the panel and open the game again to retry.</p>;
     } else if (!data?.has_achievements) {
         body = <p className="px-6 py-6 text-sm text-text-muted md:px-8">{game.name} has no Steam achievements.</p>;
     } else {
