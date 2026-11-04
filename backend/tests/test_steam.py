@@ -45,3 +45,19 @@ def test_summary_game_without_achievements_has_empty_lists(fake_steam):
     fake_steam["GetPlayerAchievements"] = (400, {})
     item = steam.get_all_achievements_summary()[0]
     assert item["unlock_times"] == [] and item["recent_unlocks"] == []
+
+
+def test_now_playing_returns_game_when_in_game(fake_steam):
+    fake_steam["GetPlayerSummaries"] = (200, {"response": {"players": [{"gameid": "570", "gameextrainfo": "Dota 2"}]}})
+    assert steam.get_now_playing() == {"appid": 570, "name": "Dota 2"}
+
+
+def test_now_playing_returns_nulls_when_not_in_game(fake_steam):
+    fake_steam["GetPlayerSummaries"] = (200, {"response": {"players": [{"steamid": "1"}]}})
+    assert steam.get_now_playing() == {"appid": None, "name": None}
+
+
+def test_now_playing_raises_when_player_missing(fake_steam):
+    fake_steam["GetPlayerSummaries"] = (200, {"response": {"players": []}})
+    with pytest.raises(ValueError):
+        steam.get_now_playing()

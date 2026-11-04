@@ -22,6 +22,19 @@ def get_owned_games() -> list:
     games = r.json().get("response", {}).get("games", [])
     return sorted(games, key=lambda x: x.get("playtime_forever", 0), reverse=True)
 
+def get_now_playing() -> dict:
+    """Returns the game the user is in right now; Steam only sends gameid while in-game."""
+    url = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
+    params = {"key": settings.steam_api_key, "steamids": settings.steam_id}
+    r = requests.get(url, params=params, timeout=10)
+    r.raise_for_status()
+    players = r.json().get("response", {}).get("players", [])
+    if not players:
+        raise ValueError("player not found")
+    gameid = players[0].get("gameid")
+    appid = int(gameid) if isinstance(gameid, str) and gameid.isdigit() else None
+    return {"appid": appid, "name": players[0].get("gameextrainfo")}
+
 def get_game_schema(app_id: int) -> dict:
     """Fetches achievement names and descriptions for a game."""
     url = "http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/"

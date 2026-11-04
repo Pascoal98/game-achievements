@@ -23,3 +23,10 @@ def get_achievements_summary():
         return steam.get_all_achievements_summary()
     except Exception:
         raise HTTPException(status_code=502, detail="Steam API error")
+
+@router.get("/now-playing")
+def get_now_playing():
+    try:
+        return steam.get_now_playing()
+    except Exception:
+        raise HTTPException(status_code=502, detail="Steam API error")
