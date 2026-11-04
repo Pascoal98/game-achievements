@@ -67,7 +67,7 @@ export default function Home() {
 
             <SlideOver open={panelOpen} onClose={closePanel}>
                 {selectedGame && (
-                    <AchievementPanel key={selectedGame.appid} game={selectedGame} onBack={closePanel} />
+                    <AchievementPanel key={selectedGame.appid} game={selectedGame} now={now} onBack={closePanel} />
                 )}
             </SlideOver>
         </div>
