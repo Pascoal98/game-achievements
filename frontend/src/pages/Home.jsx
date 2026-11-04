@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import GameGrid from '../components/library/GameGrid';
 import SlideOver from '../components/SlideOver';
 import AchievementPanel from '../components/AchievementPanel';
-import LibraryOverview from '../components/LibraryOverview';
+import Overview from '../components/overview/Overview';
 import { useGames } from '../hooks/useGames';
 import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
 
@@ -50,7 +50,15 @@ export default function Home() {
 
             <main className="relative flex-1 overflow-y-auto">
                 {view === 'overview' ? (
-                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} summaryError={summaryError} />
+                    <Overview
+                        games={games}
+                        loading={loading}
+                        error={error}
+                        summary={summary}
+                        summaryLoading={summaryLoading}
+                        summaryError={summaryError}
+                        onSelect={openGame}
+                    />
                 ) : (
                     <GameGrid
                         games={games}

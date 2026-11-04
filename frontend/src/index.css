@@ -22,6 +22,11 @@
   --color-neon: #a594ff;
   --color-neon-glow: #7c6af766;
   --radius-tile: 1rem;
+  /* Categorical series (dataviz reference dark steps, validated on #16161f) */
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
+  --color-series-4: #c98500;
 }
 
 body {
