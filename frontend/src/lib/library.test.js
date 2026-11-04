@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { coverSources, backdropSource, completionOf, filterAndSortGames } from './library';
+import { coverSources, backdropSource, assetUrl, completionOf, filterAndSortGames } from './library';
 
 const opts = (overrides) => ({ search: '', sortBy: 'playtime', onlyWithAchievements: false, ...overrides });
 
@@ -58,4 +58,10 @@ test('completion sort puts games with unknown completion last', () => {
 test('onlyWithAchievements filters by summary', () => {
     const summary = { 2: { unlocked: 0, total: 3, has_achievements: true }, 3: { unlocked: 0, total: 0, has_achievements: false } };
     expect(filterAndSortGames(games, summary, opts({ onlyWithAchievements: true })).map(g => g.appid)).toEqual([2]);
+});
+
+test('assetUrl resolves backend-relative paths against the API base and leaves absolute URLs alone', () => {
+    expect(assetUrl('/rpcs3/images/X/trophies/S/1', 'http://h')).toBe('http://h/rpcs3/images/X/trophies/S/1');
+    expect(assetUrl('https://cdn.example/icon.jpg', 'http://h')).toBe('https://cdn.example/icon.jpg');
+    expect(assetUrl('', 'http://h')).toBe('');
 });

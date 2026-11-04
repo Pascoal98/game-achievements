@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAchievements } from '../hooks/useAchievements';
-import { backdropSource } from '../lib/library';
+import { assetUrl, backdropSource } from '../lib/library';
 import { BASE } from '../api/steam';
 import { formatHours, formatRelativeTime, formatDate } from '../lib/format';
 
@@ -34,7 +34,7 @@ function FallbackGlyph({ achieved }) {
 function AchievementIcon({ src, achieved }) {
     const [failed, setFailed] = useState(false);
     if (!src || failed) return <FallbackGlyph achieved={achieved} />;
-    return <img src={src} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className="h-10 w-10 flex-shrink-0 rounded-md" />;
+    return <img src={assetUrl(src, BASE)} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className="h-10 w-10 flex-shrink-0 rounded-md" />;
 }
 
 // Most recent unlocks first, then locked ones in Steam's own order.

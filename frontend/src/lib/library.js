@@ -17,6 +17,12 @@ export function backdropSource(game, apiBase) {
     return `${CDN}/${game.appid}/header.jpg`;
 }
 
+// RPCS3 images are served by the backend under paths like /rpcs3/images/...; in the browser a bare
+// path would resolve against the frontend's origin, so it needs the API base in front. Steam URLs are already absolute.
+export function assetUrl(src, apiBase) {
+    return src && src.startsWith('/') ? `${apiBase}${src}` : src;
+}
+
 export function completionOf(summaryItem) {
     if (!summaryItem?.total) return null;
     return Math.round((summaryItem.unlocked / summaryItem.total) * 100);

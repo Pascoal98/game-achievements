@@ -2,11 +2,13 @@ import { useState } from 'react';
 import BentoTile, { TileSkeleton, TileUnavailable } from './BentoTile';
 import { mergeRecentUnlocks } from '../../lib/stats';
 import { formatRelativeTime } from '../../lib/format';
+import { assetUrl } from '../../lib/library';
+import { BASE } from '../../api/steam';
 
 function UnlockIcon({ src }) {
     const [failed, setFailed] = useState(false);
     if (!src || failed) return <span className="h-9 w-9 flex-shrink-0 rounded-md bg-success-bg" />;
-    return <img src={src} alt="" width={36} height={36} loading="lazy" onError={() => setFailed(true)} className="h-9 w-9 flex-shrink-0 rounded-md" />;
+    return <img src={assetUrl(src, BASE)} alt="" width={36} height={36} loading="lazy" onError={() => setFailed(true)} className="h-9 w-9 flex-shrink-0 rounded-md" />;
 }
 
 export default function RecentUnlocksTile({ summary, gamesById, loading, error, now, onSelect, className }) {
