@@ -70,7 +70,7 @@ export default function Home() {
                 )}
             </main>
 
-            <SlideOver open={panel.open} onClose={closePanel}>
+            <SlideOver open={panel.open} onClose={closePanel} labelledBy="panel-title">
                 {panel.game && (
                     <AchievementPanel key={panelKey(panel)} game={panel.game} now={now} onBack={closePanel} />
                 )}

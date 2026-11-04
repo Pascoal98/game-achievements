@@ -64,7 +64,7 @@ function PanelHeader({ game, now, onBack }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
             <div className="-mt-10 px-6 md:px-8">
-                <h2 className="relative m-0 text-2xl font-semibold leading-tight text-text-bright">{game.name}</h2>
+                <h2 id="panel-title" className="relative m-0 text-2xl font-semibold leading-tight text-text-bright">{game.name}</h2>
                 <dl className="m-0 mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
                     <div className="flex gap-1.5"><dt className="text-text-muted">Played</dt><dd className="m-0 tabular-nums text-text">{formatHours(game.playtime_forever)}</dd></div>
                     {twoWeeks > 0 && (
