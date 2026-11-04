@@ -57,6 +57,7 @@ export default function Home() {
                         summary={summary}
                         summaryLoading={summaryLoading}
                         summaryError={summaryError}
+                        now={now}
                         onSelect={openGame}
                     />
                 ) : (

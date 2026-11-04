@@ -27,6 +27,12 @@
   --color-series-2: #d95926;
   --color-series-3: #199e70;
   --color-series-4: #c98500;
+  /* Sequential blue, dark-surface steps (dataviz reference ramp 600 -> 200) */
+  --color-seq-1: #184f95;
+  --color-seq-2: #256abf;
+  --color-seq-3: #3987e5;
+  --color-seq-4: #6da7ec;
+  --color-seq-5: #9ec5f4;
 }
 
 body {

@@ -17,3 +17,8 @@ export const fetchAchievementsSummary = () =>
         if (!r.ok) throw new Error('Failed to fetch achievements summary');
         return r.json();
     });
+export const fetchNowPlaying = () =>
+    fetch(`${BASE}/games/now-playing`).then(r => {
+        if (!r.ok) throw new Error('Failed to fetch now playing');
+        return r.json();
+    });
