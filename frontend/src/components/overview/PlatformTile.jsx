@@ -5,6 +5,7 @@ import { formatHours } from '../../lib/format';
 // Fixed per platform so a platform keeps its colour regardless of which others are present.
 const COLORS = {
     steam: 'bg-series-1',
+    rpcs3: 'bg-series-2',
 };
 
 export default function PlatformTile({ games, className }) {

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAchievements } from '../hooks/useAchievements';
-import { coverSources } from '../lib/library';
+import { backdropSource } from '../lib/library';
+import { BASE } from '../api/steam';
 import { formatHours, formatRelativeTime, formatDate } from '../lib/format';
 
 function AchievementSkeleton() {
@@ -44,13 +45,13 @@ function orderAchievements(achievements) {
 
 function PanelHeader({ game, now, onBack }) {
     const [bannerFailed, setBannerFailed] = useState(false);
-    const header = coverSources(game.appid)[1];
+    const header = backdropSource(game, BASE);
     const twoWeeks = game.playtime_2weeks ?? 0;
 
     return (
         <div className="relative flex-shrink-0">
             <div className="relative h-36 overflow-hidden bg-bg-surface">
-                {!bannerFailed && (
+                {header && !bannerFailed && (
                     <img src={header} alt="" onError={() => setBannerFailed(true)} className="h-full w-full object-cover opacity-70" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-app via-bg-app/40 to-transparent" />
@@ -66,6 +67,7 @@ function PanelHeader({ game, now, onBack }) {
             <div className="-mt-10 px-6 md:px-8">
                 <h2 id="panel-title" className="relative m-0 text-2xl font-semibold leading-tight text-text-bright">{game.name}</h2>
                 <dl className="m-0 mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
+                    <div className="flex gap-1.5"><dt className="text-text-muted">Store</dt><dd className="m-0 text-text">{game.source === 'rpcs3' ? 'RPCS3' : 'Steam'}</dd></div>
                     <div className="flex gap-1.5"><dt className="text-text-muted">Played</dt><dd className="m-0 tabular-nums text-text">{formatHours(game.playtime_forever)}</dd></div>
                     {twoWeeks > 0 && (
                         <div className="flex gap-1.5"><dt className="text-text-muted">Last 2 weeks</dt><dd className="m-0 tabular-nums text-text">{formatHours(twoWeeks)}</dd></div>

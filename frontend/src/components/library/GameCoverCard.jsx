@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { coverSources, completionOf } from '../../lib/library';
 import { formatRelativeTime } from '../../lib/format';
+import { BASE } from '../../api/steam';
 
 function CompletionBar({ pct, loading }) {
     if (loading) return <div className="mt-2 h-1 animate-pulse rounded-full bg-bg-elevated" />;
@@ -19,11 +20,12 @@ function CompletionBar({ pct, loading }) {
 }
 
 export default function GameCoverCard({ game, summaryItem, summaryLoading, now, onClick }) {
-    const sources = coverSources(game.appid);
+    const sources = coverSources(game, BASE);
     const [sourceIndex, setSourceIndex] = useState(0);
-    const src = sources[sourceIndex];
-    // header.jpg is landscape; cropped into a portrait frame its logo is often cut off.
-    const needsNameOverlay = sourceIndex > 0;
+    const source = sources[sourceIndex];
+    const src = source?.url;
+    // Landscape art cropped into a portrait frame often loses its logo, so the name goes on top.
+    const needsNameOverlay = source !== undefined && !source.portrait;
 
     return (
         <button
@@ -40,6 +42,9 @@ export default function GameCoverCard({ game, summaryItem, summaryLoading, now, 
                         onError={() => setSourceIndex(i => i + 1)}
                         className="h-full w-full object-cover"
                     />
+                )}
+                {game.source === 'rpcs3' && (
+                    <span className="absolute left-2 top-2 z-10 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-medium text-text-bright">RPCS3</span>
                 )}
                 {(needsNameOverlay || !src) && (
                     <div className={`absolute inset-0 flex items-end p-3 ${

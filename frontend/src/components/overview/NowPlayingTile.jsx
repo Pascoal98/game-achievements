@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TileSkeleton } from './BentoTile';
-import { coverSources, completionOf } from '../../lib/library';
+import { coverSources, backdropSource, completionOf } from '../../lib/library';
+import { BASE } from '../../api/steam';
 import { mostRecentlyPlayed } from '../../lib/stats';
 import { formatHours, formatRelativeTime } from '../../lib/format';
 
@@ -30,7 +31,9 @@ export default function NowPlayingTile({ games, nowPlaying, loading, summary, no
     );
 
     const { mode, game, owned } = featured;
-    const [cover, header] = game.appid ? coverSources(game.appid) : [null, null];
+    // The hero frame is portrait, so only portrait art is used there; landscape art goes to the blurred backdrop.
+    const cover = game.appid ? coverSources(game, BASE).find(s => s.portrait)?.url : null;
+    const header = game.appid ? backdropSource(game, BASE) : null;
     const pct = game.appid ? completionOf(summary[game.appid]) : null;
 
     const content = (
