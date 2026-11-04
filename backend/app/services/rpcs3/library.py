@@ -162,3 +162,96 @@ def get_library() -> dict[str, Rpcs3Game]:
     library = scan([Path(r) for r in roots])
     _cache = (time.time(), roots, library)
     return library
+
+
+# --- Shaping for the API: RPCS3 data in the same shapes the frontend already uses for Steam.
+
+RPCS3_ID_PREFIX = "rpcs3-"
+_RECENT_UNLOCKS = 8
+_GAME_IMAGES = {"icon0": "ICON0.PNG", "pic1": "PIC1.PNG"}
+
+
+def _image_file(game: Rpcs3Game, kind: str) -> Path | None:
+    name = _GAME_IMAGES.get(kind)
+    if not name or not game.game_dir:
+        return None
+    path = game.game_dir / "PS3_GAME" / name
+    return path if path.is_file() else None
+
+
+def to_game_dict(game: Rpcs3Game) -> dict:
+    image_url = lambda kind: f"/rpcs3/images/{game.serial}/{kind}" if _image_file(game, kind) else None
+    return {
+        "appid": RPCS3_ID_PREFIX + game.serial,
+        "name": game.name,
+        "source": "rpcs3",
+        "playtime_forever": round(game.playtime_ms / 60000),
+        "rtime_last_played": game.last_played,
+        "banner_url": image_url("icon0"),
+        "backdrop_url": image_url("pic1"),
+    }
+
+
+def achievements_for(game: Rpcs3Game) -> dict:
+    achievements = []
+    for set_id, trophy_set in game.sets.items():
+        for trophy in trophy_set.trophies:
+            key = (set_id, trophy.id)
+            achieved = key in game.unlocks
+            # Locked hidden trophies would spoil the game, so only their existence is shown.
+            masked = trophy.hidden and not achieved
+            icon = f"/rpcs3/images/{game.serial}/trophies/{set_id}/{trophy.id}"
+            achievements.append({
+                "apiname": f"{set_id}:{trophy.id}",
+                "achieved": 1 if achieved else 0,
+                "display_name": "Hidden trophy" if masked else trophy.name,
+                "description": "" if masked else trophy.detail,
+                "unlocktime": game.unlocks.get(key, 0),
+                "icon": icon,
+                "icongray": icon,
+            })
+    return {
+        "has_achievements": bool(achievements),
+        "achievements": achievements,
+        "unlocked": sum(a["achieved"] for a in achievements),
+        "total": len(achievements),
+    }
+
+
+def summary_for(game: Rpcs3Game) -> dict:
+    data = achievements_for(game)
+    # Undated unlocks (time 0) still count as unlocked, but would land at the epoch on the heat map and timeline.
+    dated = sorted((a for a in data["achievements"] if a["achieved"] and a["unlocktime"] > 0),
+                   key=lambda a: a["unlocktime"], reverse=True)
+    return {
+        "appid": RPCS3_ID_PREFIX + game.serial,
+        "unlocked": data["unlocked"],
+        "total": data["total"],
+        "has_achievements": data["has_achievements"],
+        "unlock_times": [a["unlocktime"] for a in dated],
+        "recent_unlocks": [
+            {k: a[k] for k in ("apiname", "display_name", "icon", "unlocktime")}
+            for a in dated[:_RECENT_UNLOCKS]
+        ],
+    }
+
+
+def get_image(serial: str, kind: str, set_id: str | None = None, trophy_id: int | None = None) -> bytes | None:
+    """Image bytes for a scanned game, looked up only among files found by the scan, so ids can't reach arbitrary paths."""
+    game = get_library().get(serial)
+    if game is None:
+        return None
+    if kind != "trophy":
+        path = _image_file(game, kind)
+        return _read(path, bytes) if path else None
+    trophy_set = game.sets.get(set_id) if set_id else None
+    if trophy_set is None or trophy_id not in {t.id for t in trophy_set.trophies}:
+        return None
+    icon = game.icon_paths.get((set_id, trophy_id))
+    if icon:
+        return _read(icon, bytes)
+    trp = game.trp_paths.get(set_id)
+    if trp:
+        files = _read(trp, parse_trp)
+        return files.get(f"TROP{trophy_id:03d}.PNG") if files else None
+    return None

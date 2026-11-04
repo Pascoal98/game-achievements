@@ -24,6 +24,8 @@ def get_owned_games() -> list:
     r = requests.get(url, params=params, timeout=10)
     r.raise_for_status()
     games = r.json().get("response", {}).get("games", [])
+    for game in games:
+        game["source"] = "steam"
     return sorted(games, key=lambda x: x.get("playtime_forever", 0), reverse=True)
 
 def get_now_playing() -> dict:

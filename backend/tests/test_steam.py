@@ -113,3 +113,7 @@ def test_summary_skips_a_game_whose_fetch_fails(fake_steam, monkeypatch):
 
     monkeypatch.setattr(steam.requests, "get", failing_for_game_2)
     assert [item["appid"] for item in steam.get_all_achievements_summary()] == [1, 3]
+
+
+def test_owned_games_are_tagged_as_steam(fake_steam):
+    assert steam.get_owned_games()[0]["source"] == "steam"

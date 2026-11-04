@@ -1,6 +1,6 @@
 # Game Achievements
 
-A personal dashboard for your Steam library: where your playtime goes, how close you are to completing each game, and when you unlock achievements.
+A personal dashboard for your Steam library, plus PS3 games played in [RPCS3](https://rpcs3.net): where your playtime goes, how close you are to completing each game, and when you unlock achievements.
 
 It's two small apps. A FastAPI backend proxies the Steam Web API so your API key never reaches the browser, and a React frontend renders the dashboard.
 
@@ -40,7 +40,15 @@ Create `backend/.env`:
 ```env
 STEAM_API_KEY=your-api-key
 STEAM_ID=your-64-bit-steam-id
+# Optional: RPCS3 installs to include, separated by ';'
+RPCS3_ROOTS=/mnt/e/PS3;/mnt/e/PS3_AXIS
 ```
+
+`RPCS3_ROOTS` is optional. Leave it out and the app shows Steam only. Each entry is an RPCS3 install folder (the one that contains `rpcs3.exe`). Under WSL a Windows drive is mounted at `/mnt/<letter>`, so `E:\PS3` becomes `/mnt/e/PS3`.
+
+The app reads RPCS3's files and never writes to them. If you list several installs, they're combined into one library:
+- a game listed by more than one install appears once, with its playtime from all installs added together
+- a trophy unlocked in any install counts once
 
 Run it from `backend/`:
 

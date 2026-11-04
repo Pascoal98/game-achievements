@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import games
+from app.routers import games, rpcs3
 
 app = FastAPI(title="Achievement Tracker")
 
@@ -12,3 +12,4 @@ app.add_middleware(
 )
 
 app.include_router(games.router)
+app.include_router(rpcs3.router)
