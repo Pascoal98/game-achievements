@@ -19,6 +19,9 @@
   --color-success-border: #1a3a2a;
   --color-warning: #f59e0b;
   --color-error: #f87171;
+  --color-neon: #a594ff;
+  --color-neon-glow: #7c6af766;
+  --radius-tile: 1rem;
 }
 
 body {

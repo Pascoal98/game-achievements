@@ -1,55 +1,75 @@
-import { useState } from 'react';
-import GameList from '../components/GameList';
+import { useCallback, useState } from 'react';
+import GameGrid from '../components/library/GameGrid';
+import SlideOver from '../components/SlideOver';
 import AchievementPanel from '../components/AchievementPanel';
 import LibraryOverview from '../components/LibraryOverview';
 import { useGames } from '../hooks/useGames';
 import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
 
+const VIEWS = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'library', label: 'Library' },
+];
+
 export default function Home() {
     const { games, loading, error } = useGames();
     const { summary, loading: summaryLoading, error: summaryError } = useAchievementsSummary();
+    const [view, setView] = useState('overview');
     const [selectedGame, setSelectedGame] = useState(null);
+    const [panelOpen, setPanelOpen] = useState(false);
+    // One timestamp per page load keeps every "x days ago" consistent and render pure.
+    const [now] = useState(() => Date.now());
+
+    const openGame = useCallback((game) => {
+        setSelectedGame(game);
+        setPanelOpen(true);
+    }, []);
+    // Only close; keeping selectedGame lets the panel content stay visible while it slides out.
+    const closePanel = useCallback(() => setPanelOpen(false), []);
 
     return (
-        <div className="flex h-screen bg-bg-app">
-            <aside
-                className={`w-full flex-shrink-0 flex-col border-r border-border-faint bg-bg-sidebar md:flex md:w-[260px] ${
-                    selectedGame ? 'hidden' : 'flex'
-                }`}
-            >
-                <div className="px-4 pb-3 pt-5">
-                    <h1 className="m-0 text-sm font-semibold uppercase tracking-wider text-accent">
-                        Your library
-                    </h1>
-                    {!loading && (
-                        <p className="m-0 mt-0.5 text-[11px] text-text-faint">
-                            {games.length} games
-                        </p>
-                    )}
-                </div>
-                <div className="flex flex-1 flex-col overflow-hidden">
-                    <GameList
+        <div className="flex h-screen flex-col bg-bg-app">
+            <header className="flex flex-shrink-0 items-center gap-6 border-b border-border-faint px-5 py-3 md:px-8">
+                <h1 className="m-0 text-[15px] font-semibold text-text-bright">Achievements</h1>
+                <nav className="flex gap-1 rounded-lg bg-bg-surface p-1" aria-label="Views">
+                    {VIEWS.map(v => (
+                        <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => setView(v.id)}
+                            aria-current={view === v.id ? 'page' : undefined}
+                            className={`rounded-md px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                                view === v.id ? 'bg-bg-elevated text-text-bright' : 'text-text-muted hover:text-text'
+                            }`}
+                        >
+                            {v.label}
+                        </button>
+                    ))}
+                </nav>
+            </header>
+
+            <main className="relative flex-1 overflow-y-auto">
+                {view === 'overview' ? (
+                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} summaryError={summaryError} />
+                ) : (
+                    <GameGrid
                         games={games}
-                        selectedId={selectedGame?.appid}
-                        onSelect={setSelectedGame}
                         loading={loading}
                         error={error}
                         summary={summary}
                         summaryLoading={summaryLoading}
                         summaryError={summaryError}
+                        now={now}
+                        onSelect={openGame}
                     />
-                </div>
-            </aside>
-
-            <main
-                className={`relative flex-1 overflow-hidden md:block ${selectedGame ? 'block' : 'hidden'}`}
-            >
-                {selectedGame ? (
-                    <AchievementPanel key={selectedGame.appid} game={selectedGame} onBack={() => setSelectedGame(null)} />
-                ) : (
-                    <LibraryOverview games={games} summary={summary} summaryLoading={summaryLoading} summaryError={summaryError} />
                 )}
             </main>
+
+            <SlideOver open={panelOpen} onClose={closePanel}>
+                {selectedGame && (
+                    <AchievementPanel key={selectedGame.appid} game={selectedGame} onBack={closePanel} />
+                )}
+            </SlideOver>
         </div>
     );
 }
