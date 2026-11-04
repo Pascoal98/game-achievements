@@ -15,16 +15,22 @@ test('playtimeTotals averages the last two weeks over 14 days', () => {
     expect(t).toEqual({ lifetimeMinutes: 510, twoWeeksMinutes: 210, avgDailyMinutesTwoWeeks: 15 });
 });
 
-test('platformSplit reports unattributed remainder and skips empty platforms', () => {
+test('platformSplit counts all Steam playtime as one Steam entry, including hours with no device recorded', () => {
     expect(platformSplit([{ playtime_forever: 100, playtime_windows_forever: 76 }])).toEqual([
-        { key: 'windows', label: 'Windows', minutes: 76 },
-        { key: 'unattributed', label: 'Not attributed', minutes: 24 },
+        { key: 'steam', label: 'Steam', minutes: 100 },
     ]);
 });
 
-test('platformSplit clamps unattributed at zero when platforms overlap', () => {
-    const keys = platformSplit([{ playtime_forever: 10, playtime_windows_forever: 8, playtime_deck_forever: 8 }]).map(p => p.key);
-    expect(keys).toEqual(['windows', 'deck']);
+test('platformSplit folds every Steam device into the Steam entry', () => {
+    const games = [
+        { playtime_forever: 10, playtime_windows_forever: 8, playtime_deck_forever: 8 },
+        { playtime_forever: 5, playtime_linux_forever: 5 },
+    ];
+    expect(platformSplit(games)).toEqual([{ key: 'steam', label: 'Steam', minutes: 15 }]);
+});
+
+test('platformSplit is empty when nothing has been played', () => {
+    expect(platformSplit([{ playtime_forever: 0 }])).toEqual([]);
 });
 
 test('topPlayed returns the n most played, excluding unplayed', () => {

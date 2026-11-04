@@ -1,10 +1,3 @@
-const PLATFORMS = [
-    ['windows', 'Windows', 'playtime_windows_forever'],
-    ['mac', 'macOS', 'playtime_mac_forever'],
-    ['linux', 'Linux', 'playtime_linux_forever'],
-    ['deck', 'Steam Deck', 'playtime_deck_forever'],
-];
-
 const sum = (games, field) => games.reduce((total, g) => total + (g[field] ?? 0), 0);
 
 export function playtimeTotals(games) {
@@ -16,12 +9,10 @@ export function playtimeTotals(games) {
     };
 }
 
-// Steam only started attributing playtime per platform in recent years, so older
-// hours appear in playtime_forever without a platform; that remainder is shown, not hidden.
+// One entry per store. Steam's per-device fields are folded into a single Steam total,
+// because older hours have no device recorded and would otherwise go missing.
 export function platformSplit(games) {
-    const split = PLATFORMS.map(([key, label, field]) => ({ key, label, minutes: sum(games, field) }));
-    const attributed = split.reduce((total, p) => total + p.minutes, 0);
-    split.push({ key: 'unattributed', label: 'Not attributed', minutes: Math.max(0, sum(games, 'playtime_forever') - attributed) });
+    const split = [{ key: 'steam', label: 'Steam', minutes: sum(games, 'playtime_forever') }];
     return split.filter(p => p.minutes > 0);
 }
 

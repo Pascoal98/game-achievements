@@ -4,11 +4,7 @@ import { formatHours } from '../../lib/format';
 
 // Fixed per platform so a platform keeps its colour regardless of which others are present.
 const COLORS = {
-    windows: 'bg-series-1',
-    mac: 'bg-series-2',
-    linux: 'bg-series-3',
-    deck: 'bg-series-4',
-    unattributed: 'bg-text-muted',
+    steam: 'bg-series-1',
 };
 
 export default function PlatformTile({ games, className }) {
@@ -41,9 +37,6 @@ export default function PlatformTile({ games, className }) {
                             </li>
                         ))}
                     </ul>
-                    {split.some(p => p.key === 'unattributed') && (
-                        <p className="m-0 mt-3 text-xs text-text-muted">Steam didn't record a platform for older playtime.</p>
-                    )}
                 </>
             )}
         </BentoTile>
