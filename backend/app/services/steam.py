@@ -1,5 +1,6 @@
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 import requests
 from app.config import settings
 
@@ -9,6 +10,8 @@ _achievements_cache: dict[int, tuple[float, dict]] = {}
 _CACHE_TTL_SECONDS = 600
 # Matches the overview tile, so a single game can fill the library-wide "8 most recent" list.
 _RECENT_UNLOCKS_PER_GAME = 8
+# Steam calls are I/O-bound; a small pool cuts a cold summary from ~38s without bursting hard enough to get rate limited.
+_SUMMARY_WORKERS = 8
 
 def get_owned_games() -> list:
     url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -96,35 +99,37 @@ def get_game_achievements(app_id: int) -> dict:
     _achievements_cache[app_id] = (time.time(), result)
     return result
 
+def _summarize_game(app_id: int) -> dict | None:
+    """One game's summary row, or None if Steam failed for it, so one bad game doesn't sink the summary."""
+    try:
+        data = get_game_achievements(app_id)
+    except Exception:
+        logger.warning("Failed to fetch achievements for app_id=%s", app_id, exc_info=True)
+        return None
+    unlocked = sorted(
+        (a for a in data["achievements"] if a["achieved"] == 1),
+        key=lambda a: a["unlocktime"],
+        reverse=True,
+    )
+    return {
+        "appid": app_id,
+        "unlocked": data["unlocked"],
+        "total": data["total"],
+        "has_achievements": data["has_achievements"],
+        "unlock_times": [a["unlocktime"] for a in unlocked],
+        "recent_unlocks": [
+            {
+                "apiname": a["apiname"],
+                "display_name": a["display_name"],
+                "icon": a["icon"],
+                "unlocktime": a["unlocktime"],
+            }
+            for a in unlocked[:_RECENT_UNLOCKS_PER_GAME]
+        ],
+    }
+
 def get_all_achievements_summary() -> list[dict]:
     games = get_owned_games()
-    summary = []
-    for game in games:
-        app_id = game["appid"]
-        try:
-            data = get_game_achievements(app_id)
-            unlocked = sorted(
-                (a for a in data["achievements"] if a["achieved"] == 1),
-                key=lambda a: a["unlocktime"],
-                reverse=True,
-            )
-            summary.append({
-                "appid": app_id,
-                "unlocked": data["unlocked"],
-                "total": data["total"],
-                "has_achievements": data["has_achievements"],
-                "unlock_times": [a["unlocktime"] for a in unlocked],
-                "recent_unlocks": [
-                    {
-                        "apiname": a["apiname"],
-                        "display_name": a["display_name"],
-                        "icon": a["icon"],
-                        "unlocktime": a["unlocktime"],
-                    }
-                    for a in unlocked[:_RECENT_UNLOCKS_PER_GAME]
-                ],
-            })
-        except Exception:
-            logger.warning("Failed to fetch achievements for app_id=%s", app_id, exc_info=True)
-            continue
-    return summary
+    with ThreadPoolExecutor(max_workers=_SUMMARY_WORKERS) as pool:
+        rows = pool.map(_summarize_game, [game["appid"] for game in games])
+        return [row for row in rows if row is not None]

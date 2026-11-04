@@ -62,3 +62,54 @@ def test_now_playing_raises_when_player_missing(fake_steam):
     fake_steam["GetPlayerSummaries"] = (200, {"response": {"players": []}})
     with pytest.raises(ValueError):
         steam.get_now_playing()
+
+
+def _owned(n):
+    games = [{"appid": i, "name": f"G{i}", "playtime_forever": 100 - i} for i in range(1, n + 1)]
+    return (200, {"response": {"games": games}})
+
+
+def test_summary_fetches_games_concurrently(fake_steam, monkeypatch):
+    # A cold summary was ~38s for 164 games because each game's Steam calls ran one after another.
+    import threading
+    import time
+
+    fake_steam["GetOwnedGames"] = _owned(8)
+    original_get = steam.requests.get
+    lock = threading.Lock()
+    in_flight = 0
+    peak = 0
+
+    def slow_get(url, params=None, timeout=None):
+        nonlocal in_flight, peak
+        if "GetPlayerAchievements" not in url:
+            return original_get(url, params=params, timeout=timeout)
+        with lock:
+            in_flight += 1
+            peak = max(peak, in_flight)
+        time.sleep(0.05)
+        with lock:
+            in_flight -= 1
+        return original_get(url, params=params, timeout=timeout)
+
+    monkeypatch.setattr(steam.requests, "get", slow_get)
+    assert len(steam.get_all_achievements_summary()) == 8
+    assert peak > 1
+
+
+def test_summary_keeps_owned_games_order(fake_steam):
+    fake_steam["GetOwnedGames"] = _owned(12)
+    assert [item["appid"] for item in steam.get_all_achievements_summary()] == list(range(1, 13))
+
+
+def test_summary_skips_a_game_whose_fetch_fails(fake_steam, monkeypatch):
+    fake_steam["GetOwnedGames"] = _owned(3)
+    original_get = steam.requests.get
+
+    def failing_for_game_2(url, params=None, timeout=None):
+        if "GetPlayerAchievements" in url and params["appid"] == 2:
+            raise RuntimeError("Steam timeout")
+        return original_get(url, params=params, timeout=timeout)
+
+    monkeypatch.setattr(steam.requests, "get", failing_for_game_2)
+    assert [item["appid"] for item in steam.get_all_achievements_summary()] == [1, 3]
