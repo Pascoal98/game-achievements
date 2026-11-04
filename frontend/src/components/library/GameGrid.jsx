@@ -22,6 +22,8 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
     const [sortBy, setSortBy] = useState('playtime');
     const [onlyWithAchievements, setOnlyWithAchievements] = useState(false);
     const summaryUnavailable = summaryLoading || Boolean(summaryError);
+    // Completion data arrives later than the library, so say why these controls are disabled.
+    const summarySuffix = summaryLoading ? ' (loading…)' : summaryError ? ' (unavailable)' : '';
 
     const visible = useMemo(
         () => filterAndSortGames(games, summary, { search, sortBy, onlyWithAchievements }),
@@ -47,7 +49,7 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
                     <option value="playtime">Most played</option>
                     <option value="lastPlayed">Recently played</option>
                     <option value="name">Name</option>
-                    <option value="completion" disabled={summaryUnavailable}>Completion</option>
+                    <option value="completion" disabled={summaryUnavailable}>Completion{summarySuffix}</option>
                 </select>
                 <label className={`flex items-center gap-2 text-xs ${summaryUnavailable ? 'text-text-faint' : 'text-text-muted'}`}>
                     <input
@@ -57,7 +59,7 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
                         onChange={e => setOnlyWithAchievements(e.target.checked)}
                         className="accent-accent"
                     />
-                    Only games with achievements
+                    Only games with achievements{summarySuffix}
                 </label>
                 {!loading && (
                     <span className="ml-auto text-xs tabular-nums text-text-muted">
