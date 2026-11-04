@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #7c6af7;
+  --color-accent-light: #c4b9ff;
+  --color-bg-app: #0f0f13;
+  --color-bg-sidebar: #0c0c11;
+  --color-bg-surface: #16161f;
+  --color-bg-elevated: #1e1e2e;
+  --color-border: #2a2a35;
+  --color-border-faint: #1e1e2e;
+  --color-text: #d0d0da;
+  --color-text-bright: #e2e2e8;
+  --color-text-muted: #5a5a6e;
+  --color-text-faint: #3a3a48;
+  --color-text-locked: #4a4a5e;
+  --color-success: #34d399;
+  --color-success-bg: #064e3b;
+  --color-success-border: #1a3a2a;
+  --color-warning: #f59e0b;
+  --color-error: #f87171;
+  --color-neon: #a594ff;
+  --color-neon-glow: #7c6af766;
+  --radius-tile: 1rem;
+  /* Categorical series (dataviz reference dark steps, validated on #16161f) */
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
+  --color-series-4: #c98500;
+  /* Sequential blue, dark-surface steps (dataviz reference ramp 600 -> 200) */
+  --color-seq-1: #184f95;
+  --color-seq-2: #256abf;
+  --color-seq-3: #3987e5;
+  --color-seq-4: #6da7ec;
+  --color-seq-5: #9ec5f4;
+}
+
+body {
+  background: var(--color-bg-app);
+  color: var(--color-text-bright);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a48;
+}

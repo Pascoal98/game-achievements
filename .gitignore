@@ -4,3 +4,11 @@
 # Python Environment
 .venv/
 __pycache__/
+
+# Git worktrees
+.worktrees/
+
+# Claude Code / Superpowers local state
+.claude/
+.superpowers/
+docs/superpowers/
