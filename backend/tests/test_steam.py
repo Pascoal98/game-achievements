@@ -32,12 +32,13 @@ def test_achievements_icon_defaults_to_empty_when_schema_missing(fake_steam):
     assert a["icon"] == "" and a["icongray"] == ""
 
 
-def test_summary_includes_sorted_unlock_times_and_top5_recent(fake_steam):
-    unlocked = [{"apiname": f"U{t}", "achieved": 1, "unlocktime": t} for t in range(1, 8)]
+def test_summary_includes_sorted_unlock_times_and_top8_recent(fake_steam):
+    # The overview shows the 8 most recent unlocks library-wide, so one game must be able to supply all 8.
+    unlocked = [{"apiname": f"U{t}", "achieved": 1, "unlocktime": t} for t in range(1, 11)]
     fake_steam["GetPlayerAchievements"] = _player(unlocked + [{"apiname": "L", "achieved": 0, "unlocktime": 0}])
     item = steam.get_all_achievements_summary()[0]
-    assert item["unlock_times"] == [7, 6, 5, 4, 3, 2, 1]
-    assert [u["unlocktime"] for u in item["recent_unlocks"]] == [7, 6, 5, 4, 3]
+    assert item["unlock_times"] == [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    assert [u["unlocktime"] for u in item["recent_unlocks"]] == [10, 9, 8, 7, 6, 5, 4, 3]
     assert set(item["recent_unlocks"][0]) == {"apiname", "display_name", "icon", "unlocktime"}
 
 

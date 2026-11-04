@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 _achievements_cache: dict[int, tuple[float, dict]] = {}
 _CACHE_TTL_SECONDS = 600
-_RECENT_UNLOCKS_PER_GAME = 5
+# Matches the overview tile, so a single game can fill the library-wide "8 most recent" list.
+_RECENT_UNLOCKS_PER_GAME = 8
 
 def get_owned_games() -> list:
     url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
