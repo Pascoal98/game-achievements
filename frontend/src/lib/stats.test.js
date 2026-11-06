@@ -2,6 +2,7 @@ import { test, expect } from 'vitest';
 import {
     playtimeTotals, platformSplit, topPlayed, mostRecentlyPlayed,
     completionTotals, mergeRecentUnlocks, unlockHeatmap,
+    perfectGames, nextToComplete, achievementCounts,
 } from './stats';
 
 test('playtimeTotals treats missing playtime_2weeks as 0', () => {
@@ -94,4 +95,38 @@ test('unlockHeatmap of an empty summary is a 7x24 grid of zeros', () => {
     const grid = unlockHeatmap({});
     expect(grid).toHaveLength(7);
     expect(grid.every(row => row.length === 24 && row.every(v => v === 0))).toBe(true);
+});
+
+const item = (appid, unlocked, total, unlock_times = []) => ({ appid, unlocked, total, unlock_times });
+
+test('perfectGames keeps only fully unlocked games, most recently completed first', () => {
+    const summary = { 1: item(1, 5, 5, [100]), 2: item(2, 3, 5, [900]), 3: item(3, 4, 4, [500]), 4: item(4, 0, 0) };
+    expect(perfectGames(summary).map(i => i.appid)).toEqual([3, 1]);
+});
+
+test('perfectGames puts a perfect game with no dated unlocks last', () => {
+    const summary = { 'rpcs3-A': item('rpcs3-A', 2, 2, []), 1: item(1, 5, 5, [100]) };
+    expect(perfectGames(summary).map(i => i.appid)).toEqual([1, 'rpcs3-A']);
+});
+
+test('nextToComplete ranks started, unfinished games by percentage, then fewest remaining', () => {
+    const summary = {
+        1: item(1, 71, 88),   // 80.7%
+        2: item(2, 4, 5),     // 80%, 1 left
+        3: item(3, 8, 10),    // 80%, 2 left
+        4: item(4, 5, 5),     // perfect: excluded
+        5: item(5, 0, 50),    // unstarted: excluded
+        6: item(6, 0, 0),     // no achievements: excluded
+    };
+    expect(nextToComplete(summary, 3).map(i => i.appid)).toEqual([1, 2, 3]);
+    expect(nextToComplete(summary, 1).map(i => i.appid)).toEqual([1]);
+});
+
+test('nextToComplete is empty when nothing qualifies', () => {
+    expect(nextToComplete({ 1: item(1, 5, 5), 2: item(2, 0, 9) }, 3)).toEqual([]);
+});
+
+test('achievementCounts sums unlocks and counts games that have achievements', () => {
+    expect(achievementCounts({ 1: item(1, 71, 88), 2: item(2, 0, 0), 3: item(3, 5, 5) })).toEqual({ unlocked: 76, games: 2 });
+    expect(achievementCounts({})).toEqual({ unlocked: 0, games: 0 });
 });

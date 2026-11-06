@@ -53,6 +53,31 @@ export function completionTotals(summary) {
     };
 }
 
+const isPerfect = (s) => s.total > 0 && s.unlocked === s.total;
+// unlock_times is newest first; RPCS3 games can have none, and those sort last.
+const completedAt = (s) => s.unlock_times?.[0] ?? 0;
+
+export function perfectGames(summary) {
+    return Object.values(summary)
+        .filter(isPerfect)
+        .sort((a, b) => completedAt(b) - completedAt(a));
+}
+
+export function nextToComplete(summary, n) {
+    return Object.values(summary)
+        .filter(s => s.total > 0 && s.unlocked > 0 && s.unlocked < s.total)
+        .sort((a, b) => (b.unlocked / b.total - a.unlocked / a.total) || ((a.total - a.unlocked) - (b.total - b.unlocked)))
+        .slice(0, n);
+}
+
+export function achievementCounts(summary) {
+    const items = Object.values(summary);
+    return {
+        unlocked: items.reduce((total, s) => total + s.unlocked, 0),
+        games: items.filter(s => s.total > 0).length,
+    };
+}
+
 export function mergeRecentUnlocks(summary, gamesById, n) {
     // Ids come from the items themselves: Steam ids are numbers, RPCS3 ids are strings like "rpcs3-BCES01284".
     return Object.values(summary)
