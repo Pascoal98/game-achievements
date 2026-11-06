@@ -8,10 +8,10 @@ afterEach(cleanup);
 const games = [{ appid: 1, name: 'Rocket League', source: 'steam', playtime_forever: 600 }];
 const summary = { 1: { appid: 1, unlocked: 71, total: 88, unlock_times: [5], recent_unlocks: [] } };
 
-test('the cabinet shows unlocks, the shelf, next to complete, playtime split and heat map, in that order', () => {
+test('the cabinet shows unlocks, the shelf, playtime split and heat map, in that order', () => {
     render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(screen.getAllByRole('heading').map(h => h.textContent)).toEqual([
-        'Latest unlocks', '0 perfect games', 'Next to complete', 'Where you play · 10h total', 'When you unlock achievements',
+        'Latest unlocks', '0 perfect games', 'Where you play · 10h total', 'When you unlock achievements',
     ]);
 });
 
@@ -35,4 +35,10 @@ test('currently playing comes first, then latest unlocks, then the shelf', () =>
 test('the shelf spans the full width', () => {
     render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(screen.getByRole('heading', { name: '0 perfect games' }).closest('section').classList).toContain('lg:col-span-2');
+});
+
+test('the playtime split spans the full width now that next to complete is gone', () => {
+    render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
+    expect(screen.queryByRole('heading', { name: 'Next to complete' })).toBeNull();
+    expect(screen.getByRole('heading', { name: /Where you play/ }).closest('section').classList).toContain('lg:col-span-2');
 });
