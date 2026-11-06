@@ -56,7 +56,7 @@ export default function PerfectShelf({ summary, gamesById, loading, error, onSel
     return (
         <section className={className}>
             <h2 className="m-0 font-display text-[44px] font-medium leading-none text-text-bright">
-                <i className="text-accent">{perfect.length}</i> perfect {perfect.length === 1 ? 'game' : 'games'}
+                <span className="text-accent">{perfect.length}</span> perfect {perfect.length === 1 ? 'game' : 'games'}
             </h2>
             {perfect.length === 0 ? (
                 <div className="mt-4"><EmptyShelf summary={summary} gamesById={gamesById} /></div>

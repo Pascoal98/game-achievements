@@ -20,7 +20,7 @@
   --color-warning: #f59e0b;
   --color-error: #f87171;
   --radius-tile: 1rem;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Work Sans', system-ui, sans-serif;
   --font-sans: 'Work Sans', system-ui, sans-serif;
   /* Categorical series (dataviz reference dark steps, validated on #16161f) */
   --color-series-1: #3987e5;
