@@ -17,7 +17,7 @@ export function platformSplit(games) {
         .filter(p => p.minutes > 0);
 }
 
-const isPerfect = (s) => s.total > 0 && s.unlocked === s.total;
+export const isPerfect = (s) => s.total > 0 && s.unlocked === s.total;
 // unlock_times is newest first; RPCS3 games can have none, and those sort last.
 const completedAt = (s) => s.unlock_times?.[0] ?? 0;
 

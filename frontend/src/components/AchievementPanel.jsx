@@ -104,6 +104,7 @@ export default function AchievementPanel({ game, now, onBack }) {
         body = <p className="px-6 py-6 text-sm text-text-muted md:px-8">{game.name} has no Steam achievements.</p>;
     } else {
         const pct = data.total ? Math.round((data.unlocked / data.total) * 100) : 0;
+        const perfect = data.total > 0 && data.unlocked === data.total;
         body = (
             <>
                 <div className="flex-shrink-0 px-6 pb-4 pt-5 md:px-8">
@@ -111,11 +112,11 @@ export default function AchievementPanel({ game, now, onBack }) {
                         <p className="m-0 text-[13px] text-text-muted">
                             <span className="text-base font-semibold tabular-nums text-text-bright">{data.unlocked}</span> of {data.total} unlocked
                         </p>
-                        <span className={`text-sm font-semibold tabular-nums ${pct === 100 ? 'text-success' : 'text-accent-light'}`}>{pct}%</span>
+                        <span className={`text-sm font-semibold tabular-nums ${perfect ? 'text-success' : 'text-text'}`}>{pct}%</span>
                     </div>
                     <div className="mt-2 h-1.5 rounded-full bg-bg-elevated">
                         <div
-                            className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${pct === 100 ? 'bg-success' : 'bg-gradient-to-r from-accent to-accent-light'}`}
+                            className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${perfect ? 'bg-success' : 'bg-text-muted'}`}
                             style={{ width: `${pct}%` }}
                         />
                     </div>

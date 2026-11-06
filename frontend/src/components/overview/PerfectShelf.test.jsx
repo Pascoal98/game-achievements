@@ -52,3 +52,22 @@ test('when the summary fails it says so instead of showing a shelf', () => {
     renderShelf({ summary: {}, error: new Error('502') });
     expect(screen.getByText(/Unavailable/)).toBeTruthy();
 });
+
+test('a cover without portrait art shows the game name on it', () => {
+    const sly = { appid: 'rpcs3-BCES01284', name: 'Sly Cooper: Thieves in Time', source: 'rpcs3', banner_url: '/rpcs3/images/BCES01284/icon0' };
+    const noArt = { appid: 'rpcs3-X', name: 'No Art Game', source: 'rpcs3', banner_url: null };
+    renderShelf({
+        gamesById: { [sly.appid]: sly, [noArt.appid]: noArt },
+        summary: {
+            [sly.appid]: { appid: sly.appid, unlocked: 50, total: 50, unlock_times: [2] },
+            [noArt.appid]: { appid: noArt.appid, unlocked: 3, total: 3, unlock_times: [1] },
+        },
+    });
+    expect(screen.getByText('Sly Cooper: Thieves in Time')).toBeTruthy();
+    expect(screen.getByText('No Art Game')).toBeTruthy();
+});
+
+test('a focused cover gets a focus ring distinct from its brass frame', () => {
+    renderShelf();
+    expect(screen.getByRole('button', { name: 'ELDEN RING' }).classList).toContain('focus-visible:ring-offset-2');
+});

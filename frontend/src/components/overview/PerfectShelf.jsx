@@ -9,18 +9,25 @@ const plural = (n, word) => `${n.toLocaleString('en-US')} ${n === 1 ? word : `${
 function ShelfCover({ game, item, onSelect }) {
     const sources = coverSources(game, BASE);
     const [sourceIndex, setSourceIndex] = useState(0);
-    const src = sources[sourceIndex]?.url;
+    const source = sources[sourceIndex];
+    const src = source?.url;
 
     return (
         <button
             type="button"
             aria-label={game.name}
             onClick={() => onSelect(game)}
-            className="group w-[84px] flex-shrink-0 text-center outline-none"
+            className="group w-[84px] flex-shrink-0 rounded-[3px] text-center outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface"
         >
-            <div className="aspect-[2/3] overflow-hidden rounded-[3px] bg-bg-elevated ring-2 ring-accent transition group-hover:-translate-y-0.5 group-focus-visible:ring-4 motion-reduce:transition-none">
+            <div className="relative aspect-[2/3] overflow-hidden rounded-[3px] bg-bg-elevated ring-2 ring-accent transition group-hover:-translate-y-0.5 motion-reduce:transition-none">
                 {src && (
                     <img src={src} alt="" loading="lazy" onError={() => setSourceIndex(i => i + 1)} className="h-full w-full object-cover" />
+                )}
+                {/* Landscape art cropped to portrait loses its logo, and missing art shows nothing, so name the game. */}
+                {!source?.portrait && (
+                    <span className={`absolute inset-0 flex items-end p-1.5 text-left text-[11px] font-medium leading-tight text-text-bright ${
+                        src ? 'bg-gradient-to-t from-black/85 via-black/20 to-transparent' : ''
+                    }`}>{game.name}</span>
                 )}
             </div>
             <span className="block py-1.5 text-[11px] tabular-nums text-accent">{item.total} / {item.total}</span>

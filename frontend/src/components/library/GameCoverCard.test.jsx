@@ -37,3 +37,20 @@ test('a perfect game gets a brass ring on its cover', () => {
     );
     expect(container.querySelector('.aspect-\\[2\\/3\\]').classList).toContain('ring-accent');
 });
+
+const cardWith = (summaryItem) => render(
+    <GameCoverCard game={{ appid: 730, name: 'CS2', source: 'steam', playtime_forever: 60, rtime_last_played: 0 }}
+        summaryItem={summaryItem} summaryLoading={false} now={0} onClick={() => {}} />
+);
+
+test('a game one achievement short of 200 is not marked perfect', () => {
+    const { container } = cardWith({ unlocked: 199, total: 200, has_achievements: true });
+    expect(container.querySelector('.aspect-\\[2\\/3\\]').classList).not.toContain('ring-accent');
+});
+
+test('an in-progress completion bar is neutral, not brass', () => {
+    const { container } = cardWith({ unlocked: 12, total: 100, has_achievements: true });
+    const fill = container.querySelector('[style*="width: 12%"]');
+    expect(fill.classList).not.toContain('bg-accent');
+    expect(fill.classList).not.toContain('bg-success');
+});

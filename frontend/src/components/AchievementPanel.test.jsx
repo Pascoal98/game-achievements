@@ -26,3 +26,20 @@ test('RPCS3 trophy icons in the panel load from the backend, not the page origin
     const srcs = [...container.querySelectorAll('img')].map(img => img.getAttribute('src'));
     expect(srcs).toContain(`${BASE}${icon}`);
 });
+
+test('an in-progress panel progress bar is neutral, not brass', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+            has_achievements: true,
+            unlocked: 12,
+            total: 100,
+            achievements: [{ apiname: 'a', achieved: 1, display_name: 'First', description: '', unlocktime: 5, icon: '', icongray: '' }],
+        }),
+    })));
+    const game = { appid: 730, name: 'CS2', source: 'steam', playtime_forever: 60, rtime_last_played: 0 };
+    const { container } = render(<AchievementPanel game={game} now={10_000} onBack={() => {}} />);
+    await screen.findByText('First');
+    const fill = container.querySelector('[style*="width: 12%"]');
+    expect(fill.className).not.toMatch(/accent|success/);
+});

@@ -6,8 +6,9 @@ import NextToComplete from './NextToComplete';
 import PlatformTile from './PlatformTile';
 import UnlockHeatmapTile from './UnlockHeatmapTile';
 
+// minmax(0, …) lets the shelf scroll inside its column instead of widening it.
 // DOM order is the stacking order on narrow screens: shelf, unlocks, next to complete, playtime, heat map.
-const GRID = 'grid grid-cols-1 gap-x-10 gap-y-8 p-5 md:p-8 lg:grid-cols-[1.4fr_1fr]';
+const GRID = 'grid grid-cols-1 gap-x-10 gap-y-8 p-5 md:p-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]';
 
 export default function Overview({ games, loading, error, summary, summaryLoading, summaryError, now, onSelect }) {
     const gamesById = useMemo(() => Object.fromEntries(games.map(g => [g.appid, g])), [games]);

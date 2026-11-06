@@ -20,3 +20,8 @@ test('if only the summary fails, the playtime split still renders', () => {
     expect(screen.getByRole('heading', { name: /Where you play/ })).toBeTruthy();
     expect(screen.getAllByText(/Unavailable/).length).toBeGreaterThan(0);
 });
+
+test('the wide layout lets the shelf scroll instead of widening its column', () => {
+    const { container } = render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
+    expect(container.firstChild.classList).toContain('lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]');
+});
