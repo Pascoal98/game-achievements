@@ -37,3 +37,8 @@ test('renders nothing when no game has been played', () => {
     const { container } = render(<CurrentlyPlaying games={[{ ...rl, rtime_last_played: 0 }]} summary={{}} now={now} onSelect={() => {}} />);
     expect(container.innerHTML).toBe('');
 });
+
+test('the card stretches to fill its row, so the row has no empty gap', () => {
+    render(<CurrentlyPlaying games={[sly]} summary={summary} now={now} onSelect={() => {}} />);
+    expect(screen.getByRole('button').classList).toContain('flex-1');
+});

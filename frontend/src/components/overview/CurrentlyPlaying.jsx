@@ -18,7 +18,7 @@ export default function CurrentlyPlaying({ games, summary, now, onSelect, classN
             <button
                 type="button"
                 onClick={() => onSelect(game)}
-                className="group relative flex min-h-36 w-full flex-col justify-end overflow-hidden rounded-md bg-bg-surface p-4 text-left outline-none ring-1 ring-accent/35 hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent"
+                className="group relative flex min-h-48 w-full flex-1 flex-col justify-end overflow-hidden rounded-md bg-bg-surface p-4 text-left outline-none ring-1 ring-accent/35 hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent"
             >
                 {art && !artFailed && (
                     <img src={art} alt="" onError={() => setArtFailed(true)} className="absolute inset-0 h-full w-full object-cover opacity-45" />
