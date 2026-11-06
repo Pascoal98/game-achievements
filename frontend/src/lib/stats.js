@@ -17,6 +17,15 @@ export function platformSplit(games) {
         .filter(p => p.minutes > 0);
 }
 
+// Steam and RPCS3 use 0 for "never launched", so those never count as the latest.
+export function mostRecentlyPlayed(games) {
+    let latest = null;
+    for (const g of games) {
+        if ((g.rtime_last_played ?? 0) > (latest?.rtime_last_played ?? 0)) latest = g;
+    }
+    return latest;
+}
+
 export const isPerfect = (s) => s.total > 0 && s.unlocked === s.total;
 // unlock_times is newest first; RPCS3 games can have none, and those sort last.
 const completedAt = (s) => s.unlock_times?.[0] ?? 0;

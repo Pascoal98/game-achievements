@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import {
     platformSplit, mergeRecentUnlocks, unlockHeatmap,
-    perfectGames, nextToComplete, achievementCounts,
+    perfectGames, nextToComplete, achievementCounts, mostRecentlyPlayed,
 } from './stats';
 
 test('platformSplit counts all Steam playtime as one Steam entry, including hours with no device recorded', () => {
@@ -96,4 +96,10 @@ test('nextToComplete is empty when nothing qualifies', () => {
 test('achievementCounts sums unlocks and counts games that have achievements', () => {
     expect(achievementCounts({ 1: item(1, 71, 88), 2: item(2, 0, 0), 3: item(3, 5, 5) })).toEqual({ unlocked: 76, games: 2 });
     expect(achievementCounts({})).toEqual({ unlocked: 0, games: 0 });
+});
+
+test('mostRecentlyPlayed picks the latest and is null when nothing was played', () => {
+    expect(mostRecentlyPlayed([{ appid: 1, rtime_last_played: 5 }, { appid: 'rpcs3-A', rtime_last_played: 9 }]).appid).toBe('rpcs3-A');
+    expect(mostRecentlyPlayed([{ appid: 1, rtime_last_played: 0 }])).toBeNull();
+    expect(mostRecentlyPlayed([])).toBeNull();
 });

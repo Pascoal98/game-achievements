@@ -25,3 +25,9 @@ test('the wide layout lets the shelf scroll instead of widening its column', () 
     const { container } = render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(container.firstChild.classList).toContain('lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]');
 });
+
+test('currently playing sits at the top of the side column, before latest unlocks', () => {
+    const played = [{ ...games[0], rtime_last_played: 5 }];
+    render(<Overview games={played} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
+    expect(screen.getAllByRole('heading').map(h => h.textContent).slice(0, 3)).toEqual(['0 perfect games', 'Currently playing', 'Latest unlocks']);
+});
