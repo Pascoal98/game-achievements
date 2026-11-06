@@ -1,44 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --color-accent: #7c6af7;
-  --color-accent-light: #c4b9ff;
-  --color-bg-app: #0f0f13;
-  --color-bg-sidebar: #0c0c11;
-  --color-bg-surface: #16161f;
-  --color-bg-elevated: #1e1e2e;
-  --color-border: #2a2a35;
-  --color-border-faint: #1e1e2e;
-  --color-text: #d0d0da;
-  --color-text-bright: #e2e2e8;
-  --color-text-muted: #5a5a6e;
-  --color-text-faint: #3a3a48;
-  --color-text-locked: #4a4a5e;
-  --color-success: #34d399;
-  --color-success-bg: #064e3b;
-  --color-success-border: #1a3a2a;
+  --color-accent: #c9a24a;
+  --color-accent-light: #e3c77e;
+  --color-bg-app: #0e231d;
+  --color-bg-sidebar: #0b1c17;
+  --color-bg-surface: #132e26;
+  --color-bg-elevated: #1a3a30;
+  --color-border: #2c4a3f;
+  --color-border-faint: #1a3a30;
+  --color-text: #e3dbc8;
+  --color-text-bright: #efe6d2;
+  --color-text-muted: #9aa59c;
+  --color-text-faint: #4d6158;
+  --color-text-locked: #8a958d;
+  --color-success: #c9a24a;
+  --color-success-bg: #3a3016;
+  --color-success-border: #5c4a1f;
   --color-warning: #f59e0b;
   --color-error: #f87171;
   --color-neon: #a594ff;
   --color-neon-glow: #7c6af766;
   --radius-tile: 1rem;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Work Sans', system-ui, sans-serif;
   /* Categorical series (dataviz reference dark steps, validated on #16161f) */
   --color-series-1: #3987e5;
   --color-series-2: #d95926;
   --color-series-3: #199e70;
   --color-series-4: #c98500;
-  /* Sequential blue, dark-surface steps (dataviz reference ramp 600 -> 200) */
-  --color-seq-1: #184f95;
-  --color-seq-2: #256abf;
-  --color-seq-3: #3987e5;
-  --color-seq-4: #6da7ec;
-  --color-seq-5: #9ec5f4;
+  /* Sequential brass, dark-surface steps; contrast-checked on #0e231d */
+  --color-seq-1: #5c4a1f;
+  --color-seq-2: #7f6628;
+  --color-seq-3: #a68534;
+  --color-seq-4: #c9a24a;
+  --color-seq-5: #e3c77e;
 }
 
 body {
   background: var(--color-bg-app);
   color: var(--color-text-bright);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 ::-webkit-scrollbar {
@@ -55,5 +57,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a48;
+  background: #3c5a4f;
 }
