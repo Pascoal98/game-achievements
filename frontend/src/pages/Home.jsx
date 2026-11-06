@@ -8,7 +8,7 @@ import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
 import { initialPanelState, panelReducer, panelKey } from '../lib/panel';
 
 const VIEWS = [
-    { id: 'overview', label: 'Overview' },
+    { id: 'overview', label: 'Cabinet' },
     { id: 'library', label: 'Library' },
 ];
 
@@ -25,17 +25,17 @@ export default function Home() {
 
     return (
         <div className="flex h-screen flex-col bg-bg-app">
-            <header className="flex flex-shrink-0 items-center gap-6 border-b border-border-faint px-5 py-3 md:px-8">
-                <h1 className="m-0 text-[15px] font-semibold text-text-bright">Achievements</h1>
-                <nav className="flex gap-1 rounded-lg bg-bg-surface p-1" aria-label="Views">
+            <header className="flex flex-shrink-0 items-baseline gap-6 border-b border-accent/35 px-5 py-3 md:px-8">
+                <h1 className="m-0 font-display text-[26px] font-semibold text-text-bright">Game Achievements</h1>
+                <nav className="flex gap-1" aria-label="Views">
                     {VIEWS.map(v => (
                         <button
                             key={v.id}
                             type="button"
                             onClick={() => setView(v.id)}
                             aria-current={view === v.id ? 'page' : undefined}
-                            className={`rounded-md px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
-                                view === v.id ? 'bg-bg-elevated text-text-bright' : 'text-text-muted hover:text-text'
+                            className={`rounded-md px-3 py-1 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                                view === v.id ? 'text-accent' : 'text-text-muted hover:text-text'
                             }`}
                         >
                             {v.label}

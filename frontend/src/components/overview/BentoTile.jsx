@@ -1,7 +1,7 @@
 export default function BentoTile({ title, className = '', children }) {
     return (
-        <section className={`flex flex-col rounded-tile border border-border-faint bg-bg-surface p-5 ${className}`}>
-            {title && <h2 className="m-0 mb-4 text-[13px] font-medium text-text-muted">{title}</h2>}
+        <section className={`flex flex-col ${className}`}>
+            {title && <h2 className="m-0 mb-3 font-display text-[22px] font-semibold text-text-bright">{title}</h2>}
             {children}
         </section>
     );

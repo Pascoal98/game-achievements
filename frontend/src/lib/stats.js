@@ -1,14 +1,5 @@
 const sum = (games, field) => games.reduce((total, g) => total + (g[field] ?? 0), 0);
 
-export function playtimeTotals(games) {
-    const twoWeeksMinutes = sum(games, 'playtime_2weeks');
-    return {
-        lifetimeMinutes: sum(games, 'playtime_forever'),
-        twoWeeksMinutes,
-        avgDailyMinutesTwoWeeks: twoWeeksMinutes / 14,
-    };
-}
-
 const STORES = [
     ['steam', 'Steam'],
     ['rpcs3', 'RPCS3'],
@@ -24,33 +15,6 @@ export function platformSplit(games) {
             minutes: sum(games.filter(g => (g.source ?? 'steam') === key), 'playtime_forever'),
         }))
         .filter(p => p.minutes > 0);
-}
-
-export function topPlayed(games, n) {
-    return games
-        .filter(g => g.playtime_forever > 0)
-        .sort((a, b) => b.playtime_forever - a.playtime_forever)
-        .slice(0, n);
-}
-
-export function mostRecentlyPlayed(games) {
-    let latest = null;
-    for (const g of games) {
-        if ((g.rtime_last_played ?? 0) > (latest?.rtime_last_played ?? 0)) latest = g;
-    }
-    return latest;
-}
-
-export function completionTotals(summary) {
-    const items = Object.values(summary);
-    const unlocked = items.reduce((total, s) => total + s.unlocked, 0);
-    const total = items.reduce((t, s) => t + s.total, 0);
-    return {
-        unlocked,
-        total,
-        pct: total > 0 ? Math.round((unlocked / total) * 100) : 0,
-        perfectGames: items.filter(s => s.total > 0 && s.unlocked === s.total).length,
-    };
 }
 
 const isPerfect = (s) => s.total > 0 && s.unlocked === s.total;

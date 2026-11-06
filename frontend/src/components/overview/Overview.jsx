@@ -1,17 +1,15 @@
 import { useMemo } from 'react';
-import BentoTile, { TileSkeleton } from './BentoTile';
-import NowPlayingTile from './NowPlayingTile';
-import PlaytimeTile from './PlaytimeTile';
-import CompletionTile from './CompletionTile';
-import TopPlayedTile from './TopPlayedTile';
-import PlatformTile from './PlatformTile';
+import { TileSkeleton } from './BentoTile';
+import PerfectShelf from './PerfectShelf';
 import RecentUnlocksTile from './RecentUnlocksTile';
+import NextToComplete from './NextToComplete';
+import PlatformTile from './PlatformTile';
 import UnlockHeatmapTile from './UnlockHeatmapTile';
-import { useNowPlaying } from '../../hooks/useNowPlaying';
+
+// DOM order is the stacking order on narrow screens: shelf, unlocks, next to complete, playtime, heat map.
+const GRID = 'grid grid-cols-1 gap-x-10 gap-y-8 p-5 md:p-8 lg:grid-cols-[1.4fr_1fr]';
 
 export default function Overview({ games, loading, error, summary, summaryLoading, summaryError, now, onSelect }) {
-    // Mounted per visit to the tab, so switching back to Overview refreshes what's playing.
-    const { nowPlaying, loading: nowPlayingLoading } = useNowPlaying();
     const gamesById = useMemo(() => Object.fromEntries(games.map(g => [g.appid, g])), [games]);
 
     if (error) return (
@@ -19,38 +17,29 @@ export default function Overview({ games, loading, error, summary, summaryLoadin
     );
 
     if (loading) return (
-        <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-4 md:p-8">
-            {['md:col-span-2 md:row-span-2', '', '', 'md:col-span-2', 'md:col-span-2', 'md:col-span-2'].map((span, i) => (
-                <BentoTile key={i} className={`min-h-40 ${span}`}><TileSkeleton /></BentoTile>
+        <div className={GRID}>
+            {['min-h-64', 'min-h-64', 'lg:col-span-2', 'lg:col-span-2'].map((span, i) => (
+                <div key={i} className={span}><TileSkeleton /></div>
             ))}
         </div>
     );
 
     return (
-        <div className="grid auto-rows-min grid-cols-1 gap-4 p-5 md:grid-cols-4 md:p-8">
-            <NowPlayingTile
-                games={games}
-                nowPlaying={nowPlaying}
-                loading={nowPlayingLoading}
-                summary={summary}
-                now={now}
-                onSelect={onSelect}
-                className="min-h-72 md:col-span-2 md:row-span-2"
-            />
-            <PlaytimeTile games={games} />
-            <CompletionTile summary={summary} loading={summaryLoading} error={summaryError} />
-            <PlatformTile games={games} className="md:col-span-2" />
-            <TopPlayedTile games={games} onSelect={onSelect} className="md:col-span-2" />
-            <RecentUnlocksTile
-                summary={summary}
-                gamesById={gamesById}
-                loading={summaryLoading}
-                error={summaryError}
-                now={now}
-                onSelect={onSelect}
-                className="md:col-span-2"
-            />
-            <UnlockHeatmapTile summary={summary} loading={summaryLoading} error={summaryError} className="md:col-span-4" />
+        <div className={GRID}>
+            <PerfectShelf summary={summary} gamesById={gamesById} loading={summaryLoading} error={summaryError} onSelect={onSelect} />
+            <div className="flex flex-col gap-8">
+                <RecentUnlocksTile
+                    summary={summary}
+                    gamesById={gamesById}
+                    loading={summaryLoading}
+                    error={summaryError}
+                    now={now}
+                    onSelect={onSelect}
+                />
+                <NextToComplete summary={summary} gamesById={gamesById} loading={summaryLoading} error={summaryError} onSelect={onSelect} />
+            </div>
+            <PlatformTile games={games} className="lg:col-span-2" />
+            <UnlockHeatmapTile summary={summary} loading={summaryLoading} error={summaryError} className="lg:col-span-2" />
         </div>
     );
 }
