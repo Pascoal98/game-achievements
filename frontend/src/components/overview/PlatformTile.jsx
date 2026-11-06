@@ -14,7 +14,10 @@ export default function PlatformTile({ games, className }) {
     const pctOf = (minutes) => Math.round((minutes / total) * 100);
 
     return (
-        <BentoTile title="Where you play" className={className}>
+        <BentoTile
+            title={<>Where you play{total > 0 && <span className="text-text-muted">{` · ${formatHours(total)} total`}</span>}</>}
+            className={className}
+        >
             {total === 0 ? (
                 <p className="m-0 text-[13px] text-text-muted">No playtime recorded yet.</p>
             ) : (
