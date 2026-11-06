@@ -29,3 +29,11 @@ test('a Steam card has no store label and no overlay on its portrait cover', () 
     expect(screen.queryByText('RPCS3')).toBeNull();
     expect(screen.getAllByText('Counter-Strike 2')).toHaveLength(1);
 });
+
+test('a perfect game gets a brass ring on its cover', () => {
+    const { container } = render(
+        <GameCoverCard game={{ appid: 730, name: 'CS2', source: 'steam', playtime_forever: 60, rtime_last_played: 0 }}
+            summaryItem={{ unlocked: 5, total: 5, has_achievements: true }} summaryLoading={false} now={0} onClick={() => {}} />
+    );
+    expect(container.querySelector('.aspect-\\[2\\/3\\]').classList).toContain('ring-accent');
+});

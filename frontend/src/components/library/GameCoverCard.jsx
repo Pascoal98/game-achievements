@@ -26,6 +26,7 @@ export default function GameCoverCard({ game, summaryItem, summaryLoading, now, 
     const src = source?.url;
     // Landscape art cropped into a portrait frame often loses its logo, so the name goes on top.
     const needsNameOverlay = source !== undefined && !source.portrait;
+    const perfect = completionOf(summaryItem) === 100;
 
     return (
         <button
@@ -33,7 +34,9 @@ export default function GameCoverCard({ game, summaryItem, summaryLoading, now, 
             onClick={onClick}
             className="group flex flex-col rounded-[10px] text-left outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg-app"
         >
-            <div className="relative aspect-[2/3] overflow-hidden rounded-[10px] bg-bg-surface ring-1 ring-border-faint transition duration-200 group-hover:-translate-y-0.5 group-hover:ring-accent/60 motion-reduce:transition-none">
+            <div className={`relative aspect-[2/3] overflow-hidden rounded-[10px] bg-bg-surface transition duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none ${
+                perfect ? 'ring-2 ring-accent' : 'ring-1 ring-border-faint group-hover:ring-accent/60'
+            }`}>
                 {src && (
                     <img
                         src={src}
