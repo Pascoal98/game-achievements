@@ -30,12 +30,12 @@ test('a Steam card has no store label and no overlay on its portrait cover', () 
     expect(screen.getAllByText('Counter-Strike 2')).toHaveLength(1);
 });
 
-test('a perfect game gets a brass ring on its cover', () => {
+test('a perfect game gets an accent completion bar', () => {
     const { container } = render(
         <GameCoverCard game={{ appid: 730, name: 'CS2', source: 'steam', playtime_forever: 60, rtime_last_played: 0 }}
             summaryItem={{ unlocked: 5, total: 5, has_achievements: true }} summaryLoading={false} now={0} onClick={() => {}} />
     );
-    expect(container.querySelector('.aspect-\\[2\\/3\\]').classList).toContain('ring-accent');
+    expect(container.querySelector('[style*="width: 100%"]').classList).toContain('bg-accent');
 });
 
 const cardWith = (summaryItem) => render(
@@ -45,10 +45,10 @@ const cardWith = (summaryItem) => render(
 
 test('a game one achievement short of 200 is not marked perfect', () => {
     const { container } = cardWith({ unlocked: 199, total: 200, has_achievements: true });
-    expect(container.querySelector('.aspect-\\[2\\/3\\]').classList).not.toContain('ring-accent');
+    expect(container.querySelector('[style*="width: 100%"]').classList).not.toContain('bg-accent');
 });
 
-test('an in-progress completion bar is neutral, not brass', () => {
+test('an in-progress completion bar is neutral, not accent', () => {
     const { container } = cardWith({ unlocked: 12, total: 100, has_achievements: true });
     const fill = container.querySelector('[style*="width: 12%"]');
     expect(fill.classList).not.toContain('bg-accent');

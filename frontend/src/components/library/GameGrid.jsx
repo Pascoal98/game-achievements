@@ -8,14 +8,14 @@ function GridSkeleton() {
             {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i}>
                     <div className="aspect-[2/3] animate-pulse rounded-[10px] bg-bg-surface" />
-                    <div className="mt-2.5 h-3 w-3/4 animate-pulse rounded bg-bg-surface" />
+                    <div className="mt-3 h-3 w-3/4 animate-pulse rounded bg-bg-surface" />
                 </div>
             ))}
         </div>
     );
 }
 
-const inputClass = 'rounded-md border border-border bg-bg-surface px-3 py-1.5 text-xs text-text outline-none focus:border-accent';
+const inputClass = 'h-8 rounded-lg border border-border bg-bg-surface px-3 text-sm text-text-bright outline-none transition-colors duration-150 ease-out placeholder:text-text-muted focus-visible:border-accent';
 
 export default function GameGrid({ games, loading, error, summary, summaryLoading, summaryError, now, onSelect }) {
     const [search, setSearch] = useState('');
@@ -35,11 +35,11 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
     );
 
     return (
-        <div className="px-5 pb-12 md:px-8">
-            <div className="sticky top-0 z-10 -mx-5 mb-6 flex flex-wrap items-center gap-3 bg-bg-app/90 px-5 py-4 backdrop-blur md:-mx-8 md:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 pb-12 md:px-8">
+            <div className="sticky top-0 z-10 -mx-4 mb-6 flex flex-wrap items-center gap-3 bg-bg-app px-4 py-4 md:-mx-8 md:px-8">
                 <input
                     type="search"
-                    placeholder="Search your library"
+                    placeholder="Search"
                     aria-label="Search games"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -51,7 +51,7 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
                     <option value="name">Name</option>
                     <option value="completion" disabled={summaryUnavailable}>Completion{summarySuffix}</option>
                 </select>
-                <label className={`flex items-center gap-2 text-xs ${summaryUnavailable ? 'text-text-faint' : 'text-text-muted'}`}>
+                <label className={`flex items-center gap-2 text-sm ${summaryUnavailable ? 'text-text-faint' : 'text-text'}`}>
                     <input
                         type="checkbox"
                         checked={onlyWithAchievements}
@@ -62,7 +62,7 @@ export default function GameGrid({ games, loading, error, summary, summaryLoadin
                     Only games with achievements{summarySuffix}
                 </label>
                 {!loading && (
-                    <span className="ml-auto text-xs tabular-nums text-text-muted">
+                    <span className="ml-auto font-mono text-xs tabular-nums text-text-muted">
                         {visible.length === games.length ? `${games.length} games` : `${visible.length} of ${games.length}`}
                     </span>
                 )}

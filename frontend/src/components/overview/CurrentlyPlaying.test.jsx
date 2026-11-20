@@ -38,7 +38,18 @@ test('renders nothing when no game has been played', () => {
     expect(container.innerHTML).toBe('');
 });
 
-test('the card stretches to fill its row, so the row has no empty gap', () => {
+test('a dot marks a game played within the last day', () => {
     render(<CurrentlyPlaying games={[sly]} summary={summary} now={now} onSelect={() => {}} />);
-    expect(screen.getByRole('button').classList).toContain('flex-1');
+    expect(screen.getByTestId('played-today')).toBeTruthy();
+});
+
+test('no dot for a game last played more than a day ago', () => {
+    render(<CurrentlyPlaying games={[rl]} summary={{}} now={now} onSelect={() => {}} />);
+    expect(screen.queryByTestId('played-today')).toBeNull();
+});
+
+test('with nothing played, latest unlocks still render on their own', () => {
+    render(<CurrentlyPlaying games={[{ ...rl, rtime_last_played: 0 }]} summary={{}} now={now} onSelect={() => {}}><p>Latest unlocks</p></CurrentlyPlaying>);
+    expect(screen.getByText('Latest unlocks')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Currently playing' })).toBeNull();
 });

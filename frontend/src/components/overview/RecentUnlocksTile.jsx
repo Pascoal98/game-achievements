@@ -7,8 +7,8 @@ import { BASE } from '../../api/steam';
 
 function UnlockIcon({ src }) {
     const [failed, setFailed] = useState(false);
-    if (!src || failed) return <span className="h-9 w-9 flex-shrink-0 rounded-full bg-success-bg ring-2 ring-accent" />;
-    return <img src={assetUrl(src, BASE)} alt="" width={36} height={36} loading="lazy" onError={() => setFailed(true)} className="h-9 w-9 flex-shrink-0 rounded-full object-cover ring-2 ring-accent" />;
+    if (!src || failed) return <span className="h-10 w-10 flex-shrink-0 rounded-lg bg-bg-elevated" />;
+    return <img src={assetUrl(src, BASE)} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className="h-10 w-10 flex-shrink-0 rounded-lg object-cover" />;
 }
 
 export default function RecentUnlocksTile({ summary, gamesById, loading, error, now, onSelect, className }) {
@@ -20,20 +20,19 @@ export default function RecentUnlocksTile({ summary, gamesById, loading, error, 
         content = unlocks.length === 0 ? (
             <p className="m-0 text-[13px] text-text-muted">No achievements unlocked yet.</p>
         ) : (
-            <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+            <ul className="-mx-2 m-0 flex list-none flex-col gap-0.5 p-0">
                 {unlocks.map(u => (
                     <li key={`${u.appid}-${u.apiname}`}>
                         <button
                             type="button"
                             onClick={() => gamesById[u.appid] && onSelect(gamesById[u.appid])}
-                            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left outline-none hover:bg-bg-elevated focus-visible:ring-2 focus-visible:ring-accent"
+                            className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left outline-none transition-colors duration-150 ease-out hover:bg-bg-elevated focus-visible:ring-2 focus-visible:ring-accent"
                         >
                             <UnlockIcon src={u.icon} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[13px] text-text-bright">{u.display_name}</span>
-                                <span className="block truncate text-[11px] text-text-muted">{u.gameName}</span>
+                                <span className="block truncate text-sm text-text-bright">{u.display_name}</span>
+                                <span className="block truncate font-mono text-xs text-text-muted">{u.gameName} · {formatRelativeTime(u.unlocktime, now)}</span>
                             </span>
-                            <span className="flex-shrink-0 text-[11px] text-text-muted">{formatRelativeTime(u.unlocktime, now)}</span>
                         </button>
                     </li>
                 ))}

@@ -11,7 +11,7 @@ const summary = { 1: { appid: 1, unlocked: 71, total: 88, unlock_times: [5], rec
 test('the cabinet shows unlocks, the shelf, playtime split and heat map, in that order', () => {
     render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(screen.getAllByRole('heading').map(h => h.textContent)).toEqual([
-        'Latest unlocks', '0 perfect games', 'Where you play · 10h total', 'When you unlock achievements',
+        'Latest unlocks', '0 perfect games', 'Where you play', 'When you unlock achievements',
     ]);
 });
 
@@ -21,24 +21,8 @@ test('if only the summary fails, the playtime split still renders', () => {
     expect(screen.getAllByText(/Unavailable/).length).toBeGreaterThan(0);
 });
 
-test('the wide layout lets the shelf scroll instead of widening its column', () => {
-    const { container } = render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
-    expect(container.firstChild.classList).toContain('lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]');
-});
-
 test('currently playing comes first, then latest unlocks, then the shelf', () => {
     const played = [{ ...games[0], rtime_last_played: 5 }];
     render(<Overview games={played} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(screen.getAllByRole('heading').map(h => h.textContent).slice(0, 3)).toEqual(['Currently playing', 'Latest unlocks', '0 perfect games']);
-});
-
-test('the shelf spans the full width', () => {
-    render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
-    expect(screen.getByRole('heading', { name: '0 perfect games' }).closest('section').classList).toContain('lg:col-span-2');
-});
-
-test('the playtime split spans the full width now that next to complete is gone', () => {
-    render(<Overview games={games} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
-    expect(screen.queryByRole('heading', { name: 'Next to complete' })).toBeNull();
-    expect(screen.getByRole('heading', { name: /Where you play/ }).closest('section').classList).toContain('lg:col-span-2');
 });

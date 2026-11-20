@@ -22,10 +22,10 @@ function AchievementSkeleton() {
 
 function FallbackGlyph({ achieved }) {
     return (
-        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md ${achieved ? 'bg-success-bg' : 'bg-bg-elevated'}`}>
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-bg-elevated">
             {achieved
-                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-success" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
-                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-text-faint" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-text-bright" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-text-faint" strokeWidth="1.5"><rect width="18" height="11" x="3" y="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
             }
         </div>
     );
@@ -34,7 +34,7 @@ function FallbackGlyph({ achieved }) {
 function AchievementIcon({ src, achieved }) {
     const [failed, setFailed] = useState(false);
     if (!src || failed) return <FallbackGlyph achieved={achieved} />;
-    return <img src={assetUrl(src, BASE)} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className={`h-10 w-10 flex-shrink-0 ${achieved ? 'rounded-full object-cover ring-2 ring-accent' : 'rounded-md'}`} />;
+    return <img src={assetUrl(src, BASE)} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className="h-10 w-10 flex-shrink-0 rounded-lg object-cover" />;
 }
 
 // Most recent unlocks first, then locked ones in Steam's own order.
@@ -60,12 +60,12 @@ function PanelHeader({ game, now, onBack }) {
                 type="button"
                 onClick={onBack}
                 aria-label="Close"
-                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-text-bright outline-none backdrop-blur hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-accent"
+                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-bg-app/70 text-text-bright outline-none transition-colors duration-150 ease-out hover:bg-bg-app focus-visible:ring-2 focus-visible:ring-accent"
             >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
             <div className="-mt-10 px-6 md:px-8">
-                <h2 id="panel-title" className="relative m-0 font-display text-3xl font-semibold leading-tight text-text-bright">{game.name}</h2>
+                <h2 id="panel-title" className="relative m-0 text-balance font-display text-[32px] font-medium leading-tight tracking-[-0.02em] text-text-bright">{game.name}</h2>
                 <dl className="m-0 mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
                     <div className="flex gap-1.5"><dt className="text-text-muted">Store</dt><dd className="m-0 text-text">{game.source === 'rpcs3' ? 'RPCS3' : 'Steam'}</dd></div>
                     <div className="flex gap-1.5"><dt className="text-text-muted">Played</dt><dd className="m-0 tabular-nums text-text">{formatHours(game.playtime_forever)}</dd></div>
@@ -110,13 +110,13 @@ export default function AchievementPanel({ game, now, onBack }) {
                 <div className="flex-shrink-0 px-6 pb-4 pt-5 md:px-8">
                     <div className="flex items-baseline justify-between">
                         <p className="m-0 text-[13px] text-text-muted">
-                            <span className="text-base font-semibold tabular-nums text-text-bright">{data.unlocked}</span> of {data.total} unlocked
+                            <span className="font-display text-xl font-medium tabular-nums text-text-bright">{data.unlocked}</span> of {data.total} unlocked
                         </p>
-                        <span className={`text-sm font-semibold tabular-nums ${perfect ? 'text-success' : 'text-text'}`}>{pct}%</span>
+                        <span className={`font-mono text-sm tabular-nums ${perfect ? 'text-accent' : 'text-text'}`}>{pct}%</span>
                     </div>
                     <div className="mt-2 h-1.5 rounded-full bg-bg-elevated">
                         <div
-                            className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${perfect ? 'bg-success' : 'bg-text-muted'}`}
+                            className={`h-full rounded-full ${perfect ? 'bg-accent' : 'bg-text-muted'}`}
                             style={{ width: `${pct}%` }}
                         />
                     </div>
@@ -126,19 +126,19 @@ export default function AchievementPanel({ game, now, onBack }) {
                         aria-label="Search achievements"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="mt-4 w-full rounded-md border border-border bg-bg-surface px-3 py-1.5 text-xs text-text outline-none focus:border-accent"
+                        className="mt-4 h-8 w-full rounded-lg border border-border bg-bg-surface px-3 text-sm text-text-bright outline-none transition-colors duration-150 ease-out placeholder:text-text-muted focus-visible:border-accent"
                     />
                 </div>
                 <ul className="m-0 flex-1 list-none overflow-y-auto px-4 pb-8 md:px-6">
                     {visibleAchievements.map(a => (
-                        <li key={a.apiname} className={`flex items-center gap-3 rounded-lg px-2 py-2.5 ${a.achieved ? '' : 'opacity-55'}`}>
+                        <li key={a.apiname} className={`flex items-center gap-3 rounded-lg px-2 py-2 ${a.achieved ? '' : 'opacity-55'}`}>
                             <AchievementIcon src={a.achieved ? a.icon : a.icongray} achieved={Boolean(a.achieved)} />
                             <div className="min-w-0 flex-1">
-                                <span className={`block truncate text-[13px] ${a.achieved ? 'text-text-bright' : 'text-text-locked'}`}>{a.display_name}</span>
-                                {a.description && <span className="mt-0.5 block truncate text-[11px] text-text-muted">{a.description}</span>}
+                                <span className={`block truncate text-sm ${a.achieved ? 'text-text-bright' : 'text-text'}`}>{a.display_name}</span>
+                                {a.description && <span className="mt-0.5 block truncate text-xs text-text-muted">{a.description}</span>}
                             </div>
                             {a.achieved && a.unlocktime > 0 && (
-                                <span className="flex-shrink-0 text-[11px] tabular-nums text-text-muted">{formatDate(a.unlocktime)}</span>
+                                <span className="flex-shrink-0 font-mono text-xs tabular-nums text-text-muted">{formatDate(a.unlocktime)}</span>
                             )}
                         </li>
                     ))}

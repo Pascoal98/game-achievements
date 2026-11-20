@@ -1,38 +1,57 @@
 import { useState } from 'react';
-import BentoTile from './BentoTile';
 import { mostRecentlyPlayed } from '../../lib/stats';
-import { backdropSource } from '../../lib/library';
+import { heroSources } from '../../lib/library';
 import { formatHours, formatRelativeTime } from '../../lib/format';
 import { BASE } from '../../api/steam';
 
-export default function CurrentlyPlaying({ games, summary, now, onSelect, className }) {
-    const [artFailed, setArtFailed] = useState(false);
-    const game = mostRecentlyPlayed(games);
-    if (!game) return null;
+const DAY_MS = 86_400_000;
 
-    const art = backdropSource(game, BASE);
+// The stage: the game's own art fills it, and `children` (latest unlocks) sits on its right.
+// With nothing played yet there is no stage, so the children render on their own.
+export default function CurrentlyPlaying({ games, summary, now, onSelect, children }) {
+    const [artIndex, setArtIndex] = useState(0);
+    const game = mostRecentlyPlayed(games);
+    if (!game) return children ?? null;
+
+    const art = heroSources(game, BASE)[artIndex];
     const item = summary[game.appid];
+    const pct = item?.total > 0 ? (item.unlocked / item.total) * 100 : null;
+    const playedToday = now - game.rtime_last_played * 1000 < DAY_MS;
 
     return (
-        <BentoTile title="Currently playing" className={className}>
-            <button
-                type="button"
-                onClick={() => onSelect(game)}
-                className="group relative flex min-h-48 w-full flex-1 flex-col justify-end overflow-hidden rounded-md bg-bg-surface p-4 text-left outline-none ring-1 ring-accent/35 hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent"
-            >
-                {art && !artFailed && (
-                    <img src={art} alt="" onError={() => setArtFailed(true)} className="absolute inset-0 h-full w-full object-cover opacity-45" />
+        <section className="relative grid min-h-[420px] overflow-hidden rounded-[20px] bg-bg-surface lg:grid-cols-[minmax(0,1fr)_360px]">
+            {art && (
+                <img src={art} alt="" onError={() => setArtIndex(i => i + 1)} className="absolute inset-0 h-full w-full object-cover object-[center_30%]" />
+            )}
+            <span className="absolute inset-0 bg-[linear-gradient(90deg,rgb(20_20_21/0.92),rgb(20_20_21/0.55)_45%,rgb(20_20_21/0.2)_70%),linear-gradient(0deg,rgb(20_20_21/0.9),rgb(20_20_21/0)_55%)]" />
+            <div className="relative flex flex-col justify-end p-6 md:p-10">
+                <div className="flex items-center gap-2 text-[13px] text-text">
+                    {playedToday && <span data-testid="played-today" className="h-2 w-2 rounded-full bg-accent" />}
+                    <h2 className="m-0 text-[13px] font-medium text-text-bright">Currently playing</h2>
+                    <span aria-hidden="true">·</span>
+                    <span>Last played {formatRelativeTime(game.rtime_last_played, now)}</span>
+                </div>
+                <p className="m-0 mt-2 mb-6 max-w-[12ch] text-balance font-display text-[40px] font-medium leading-none tracking-[-0.03em] text-text-bright md:text-[64px]">
+                    {game.name}
+                </p>
+                <div className="flex flex-wrap gap-x-8 gap-y-2 font-display text-xl font-medium tabular-nums text-text-bright">
+                    <span>{formatHours(game.playtime_forever)} played</span>
+                    {item?.total > 0 && <span>{item.unlocked} of {item.total} achievements</span>}
+                </div>
+                {pct !== null && (
+                    <div className="mt-6 h-1 w-80 max-w-full rounded-sm bg-text-bright/15">
+                        <div className="h-full rounded-sm bg-accent" style={{ width: `${pct}%` }} />
+                    </div>
                 )}
-                <span className="absolute inset-0 bg-gradient-to-t from-bg-surface via-bg-surface/70 to-transparent" />
-                <span className="relative">
-                    <span className="block text-[12px] text-text-muted">Last played {formatRelativeTime(game.rtime_last_played, now)}</span>
-                    <span className="mt-1 block font-display text-[26px] font-semibold leading-tight text-text-bright">{game.name}</span>
-                    <span className="mt-2 flex flex-wrap gap-x-4 text-[13px] tabular-nums text-text">
-                        <span>{formatHours(game.playtime_forever)} played</span>
-                        {item?.total > 0 && <span>{item.unlocked} of {item.total} achievements</span>}
-                    </span>
-                </span>
-            </button>
-        </BentoTile>
+                <button
+                    type="button"
+                    onClick={() => onSelect(game)}
+                    className="mt-8 h-10 self-start rounded-[10px] bg-text-bright px-5 font-medium text-bg-app shadow-[inset_0_1px_0_rgb(255_255_255/0.4)] outline-none transition-[background-color,transform] duration-150 ease-out hover:bg-white focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-app active:scale-[0.98] motion-reduce:transition-none"
+                >
+                    Open achievement list
+                </button>
+            </div>
+            {children && <div className="relative p-2 pt-0 lg:p-4">{children}</div>}
+        </section>
     );
 }

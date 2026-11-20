@@ -1,38 +1,29 @@
 @import "tailwindcss";
 
+/* Graphite chrome; colour comes from game art. Ember marks only what matters: progress, perfect games, the busiest hour, today. */
 @theme {
-  --color-accent: #66c0f4;
-  --color-accent-light: #a8d8f7;
-  --color-bg-app: #1b2838;
-  --color-bg-sidebar: #171a21;
-  --color-bg-surface: #16202d;
-  --color-bg-elevated: #22303f;
-  --color-border: #2a475e;
-  --color-border-faint: #22313f;
-  --color-text: #c7d5e0;
-  --color-text-bright: #ffffff;
-  --color-text-muted: #8f98a0;
-  --color-text-faint: #4b5b6b;
-  --color-text-locked: #8a96a2;
-  --color-success: #66c0f4;
-  --color-success-bg: #1f3b52;
-  --color-success-border: #2a475e;
-  --color-warning: #f59e0b;
-  --color-error: #f87171;
-  --radius-tile: 1rem;
-  --font-display: 'Work Sans', system-ui, sans-serif;
-  --font-sans: 'Work Sans', system-ui, sans-serif;
-  /* Categorical series (dataviz reference dark steps, validated on #16161f) */
-  --color-series-1: #3987e5;
-  --color-series-2: #d95926;
-  --color-series-3: #199e70;
-  --color-series-4: #c98500;
-  /* Sequential blue, dark-surface steps (dataviz reference ramp 600 -> 200), contrast-checked on #1b2838 */
-  --color-seq-1: #184f95;
-  --color-seq-2: #256abf;
-  --color-seq-3: #3987e5;
-  --color-seq-4: #6da7ec;
-  --color-seq-5: #9ec5f4;
+  --color-accent: #ff7a45;
+  --color-on-accent: #1a0c05;
+  --color-bg-app: #141415;
+  --color-bg-surface: #19191b;
+  --color-bg-elevated: #232325;
+  --color-border: rgb(237 237 237 / 0.08);
+  --color-text-bright: #ededed;
+  --color-text: #a1a1a6;
+  --color-text-muted: #85858b;
+  --color-text-faint: #5c5c62;
+  --color-error: #e5484d;
+  /* Heat map steps, neutral so only the busiest hour carries the accent */
+  --color-heat-0: #1c1c1e;
+  --color-heat-1: #2a2a2d;
+  --color-heat-2: #3a3a3e;
+  --color-heat-3: #545459;
+  --color-heat-4: #76767c;
+  --color-heat-5: #a3a3a8;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
@@ -43,6 +34,7 @@ body {
 
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -50,10 +42,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-bg-elevated);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3d5a75;
+  background: var(--color-heat-3);
 }

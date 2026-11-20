@@ -11,11 +11,11 @@ function CompletionBar({ pct, perfect, loading }) {
         <div className="mt-2 flex items-center gap-2">
             <div className="h-1 flex-1 rounded-full bg-bg-elevated">
                 <div
-                    className={`h-full rounded-full ${perfect ? 'bg-success' : 'bg-text-muted'}`}
+                    className={`h-full rounded-full ${perfect ? 'bg-accent' : 'bg-text-muted'}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>
-            <span className={`text-[11px] tabular-nums ${perfect ? 'text-success' : 'text-text-muted'}`}>{pct}%</span>
+            <span className={`font-mono text-[11px] tabular-nums ${perfect ? 'text-accent' : 'text-text-muted'}`}>{pct}%</span>
         </div>
     );
 }
@@ -36,9 +36,7 @@ export default function GameCoverCard({ game, summaryItem, summaryLoading, now, 
             onClick={onClick}
             className="group flex flex-col rounded-[10px] text-left outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg-app"
         >
-            <div className={`relative aspect-[2/3] overflow-hidden rounded-[10px] bg-bg-surface transition duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none ${
-                perfect ? 'ring-2 ring-accent' : 'ring-1 ring-border-faint group-hover:ring-accent/60'
-            }`}>
+            <div className="relative aspect-[2/3] overflow-hidden rounded-[10px] bg-bg-surface transition-transform duration-200 ease-out group-hover:-translate-y-0.5 motion-reduce:transition-none">
                 {src && (
                     <img
                         src={src}
@@ -49,18 +47,18 @@ export default function GameCoverCard({ game, summaryItem, summaryLoading, now, 
                     />
                 )}
                 {game.source === 'rpcs3' && (
-                    <span className="absolute left-2 top-2 z-10 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-medium text-text-bright">RPCS3</span>
+                    <span className="absolute left-2 top-2 z-10 rounded bg-bg-app/85 px-1.5 py-0.5 font-mono text-[11px] text-text-bright">RPCS3</span>
                 )}
                 {(needsNameOverlay || !src) && (
                     <div className={`absolute inset-0 flex items-end p-3 ${
-                        src ? 'bg-gradient-to-t from-black/85 via-black/20 to-transparent' : 'bg-gradient-to-br from-bg-elevated to-bg-sidebar'
+                        src ? 'bg-gradient-to-t from-black/85 via-black/20 to-transparent' : 'bg-bg-elevated'
                     }`}>
-                        <span className="text-balance text-sm font-semibold leading-snug text-text-bright">{game.name}</span>
+                        <span className="text-balance font-display text-base font-medium leading-snug text-text-bright">{game.name}</span>
                     </div>
                 )}
             </div>
-            <p className="m-0 mt-2.5 truncate text-[13px] font-medium text-text group-hover:text-text-bright">{game.name}</p>
-            <p className="m-0 mt-0.5 text-[11px] text-text-muted">{formatRelativeTime(game.rtime_last_played, now)}</p>
+            <p className="m-0 mt-3 truncate text-sm font-medium text-text-bright">{game.name}</p>
+            <p className="m-0 mt-0.5 font-mono text-xs text-text-muted">{formatRelativeTime(game.rtime_last_played, now)}</p>
             <CompletionBar pct={completionOf(summaryItem)} perfect={perfect} loading={summaryLoading} />
         </button>
     );

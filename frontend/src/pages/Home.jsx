@@ -25,8 +25,8 @@ export default function Home() {
 
     return (
         <div className="flex h-screen flex-col bg-bg-app">
-            <header className="flex flex-shrink-0 items-baseline gap-6 border-b border-accent/35 px-5 py-3 md:px-8">
-                <h1 className="m-0 font-display text-[26px] font-semibold text-text-bright">Game Achievements</h1>
+            <header className="flex h-14 flex-shrink-0 items-center gap-6 px-4 md:px-8">
+                <h1 className="m-0 font-display text-[17px] font-semibold text-text-bright">Game Achievements</h1>
                 <nav className="flex gap-1" aria-label="Views">
                     {VIEWS.map(v => (
                         <button
@@ -34,8 +34,8 @@ export default function Home() {
                             type="button"
                             onClick={() => setView(v.id)}
                             aria-current={view === v.id ? 'page' : undefined}
-                            className={`rounded-md px-3 py-1 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
-                                view === v.id ? 'text-accent' : 'text-text-muted hover:text-text'
+                            className={`h-8 rounded-2xl px-3 text-sm font-medium outline-none transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-accent ${
+                                view === v.id ? 'bg-bg-elevated text-text-bright' : 'text-text-muted hover:text-text-bright'
                             }`}
                         >
                             {v.label}
