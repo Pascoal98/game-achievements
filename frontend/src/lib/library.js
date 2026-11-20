@@ -1,5 +1,9 @@
 const CDN = 'https://cdn.cloudflare.steamstatic.com/steam/apps';
 
+// Each Steam kind tries the backend's store art first (newer games keep it under hashed paths
+// the CDN guess can't find), then the guessed CDN path that works for older games.
+const steamArt = (game, kind, file) => [game.art?.[kind], `${CDN}/${game.appid}/${file}`].filter(Boolean);
+
 // Ordered fallbacks for a game's card art. Steam's portrait cover is missing for older titles,
 // and RPCS3 only has a landscape banner; non-portrait art gets a name overlay because cropping cuts its logo.
 export function coverSources(game, apiBase) {
@@ -7,20 +11,20 @@ export function coverSources(game, apiBase) {
         return game.banner_url ? [{ url: `${apiBase}${game.banner_url}`, portrait: false }] : [];
     }
     return [
-        { url: `${CDN}/${game.appid}/library_600x900.jpg`, portrait: true },
-        { url: `${CDN}/${game.appid}/header.jpg`, portrait: false },
+        ...steamArt(game, 'cover', 'library_600x900.jpg').map(url => ({ url, portrait: true })),
+        ...steamArt(game, 'header', 'header.jpg').map(url => ({ url, portrait: false })),
     ];
 }
 
 export function backdropSource(game, apiBase) {
     if (game.source === 'rpcs3') return game.backdrop_url ? `${apiBase}${game.backdrop_url}` : null;
-    return `${CDN}/${game.appid}/header.jpg`;
+    return steamArt(game, 'header', 'header.jpg')[0];
 }
 
 // Full-width art needs Steam's wide hero image; the 460px header only stands in when a game has none.
 export function heroSources(game, apiBase) {
     if (game.source === 'rpcs3') return game.backdrop_url ? [`${apiBase}${game.backdrop_url}`] : [];
-    return [`${CDN}/${game.appid}/library_hero.jpg`, `${CDN}/${game.appid}/header.jpg`];
+    return [...steamArt(game, 'hero', 'library_hero.jpg'), ...steamArt(game, 'header', 'header.jpg')];
 }
 
 // RPCS3 images are served by the backend under paths like /rpcs3/images/...; in the browser a bare

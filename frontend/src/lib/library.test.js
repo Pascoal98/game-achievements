@@ -36,6 +36,26 @@ test('heroSources tries the wide Steam hero art before the small header', () => 
     expect(heroSources({ ...rpcs3Game, backdrop_url: null }, 'http://h')).toEqual([]);
 });
 
+// The backend resolves store art for newer games, whose files live under hashed paths the CDN guess can't find.
+const art = { cover: 'https://s/cover.jpg', hero: 'https://s/hero.jpg', header: 'https://s/header.jpg' };
+
+test('store art from the backend is tried before the guessed CDN paths', () => {
+    const game = { appid: 10, source: 'steam', art };
+    expect(coverSources(game, 'http://h')).toEqual([
+        { url: art.cover, portrait: true },
+        { url: `${STEAM_CDN}/10/library_600x900.jpg`, portrait: true },
+        { url: art.header, portrait: false },
+        { url: `${STEAM_CDN}/10/header.jpg`, portrait: false },
+    ]);
+    expect(heroSources(game, 'http://h')).toEqual([art.hero, `${STEAM_CDN}/10/library_hero.jpg`, art.header, `${STEAM_CDN}/10/header.jpg`]);
+    expect(backdropSource(game, 'http://h')).toBe(art.header);
+});
+
+test('store art kinds a game lacks are skipped', () => {
+    const game = { appid: 10, source: 'steam', art: { header: art.header } };
+    expect(heroSources(game, 'http://h')).toEqual([`${STEAM_CDN}/10/library_hero.jpg`, art.header, `${STEAM_CDN}/10/header.jpg`]);
+});
+
 test('completionOf handles missing and zero-total', () => {
     expect(completionOf(undefined)).toBeNull();
     expect(completionOf({ unlocked: 0, total: 0 })).toBeNull();
