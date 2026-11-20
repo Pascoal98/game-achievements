@@ -196,3 +196,40 @@ def test_a_failed_schema_fetch_is_not_kept(fake_steam):
     steam._achievements_cache.clear()
     fake_steam["GetSchemaForGame"] = _schema([{"name": "A", "displayName": "Alpha"}])
     assert steam.get_game_achievements(10)["achievements"][0]["display_name"] == "Alpha"
+
+
+def _rarity(*pairs):
+    # Steam sends percentages as strings.
+    return (200, {"achievementpercentages": {"achievements": [{"name": n, "percent": p} for n, p in pairs]}})
+
+
+def test_achievements_carry_the_share_of_players_who_have_them(fake_steam):
+    fake_steam["GetPlayerAchievements"] = _player([
+        {"apiname": "A", "achieved": 1, "unlocktime": 5},
+        {"apiname": "B", "achieved": 0, "unlocktime": 0},
+    ])
+    fake_steam["GetGlobalAchievementPercentagesForApp"] = _rarity(("A", "74.9"), ("B", "nonsense"))
+    a, b = steam.get_game_achievements(10)["achievements"]
+    assert a["rarity"] == 74.9
+    assert b["rarity"] is None
+
+
+def test_a_rarity_outage_leaves_achievements_intact_and_is_not_kept(fake_steam):
+    fake_steam["GetPlayerAchievements"] = _player([{"apiname": "A", "achieved": 1, "unlocktime": 5}])
+    fake_steam["GetGlobalAchievementPercentagesForApp"] = (500, {})
+    data = steam.get_game_achievements(10)
+    assert data["unlocked"] == 1 and data["achievements"][0]["rarity"] is None
+    steam._achievements_cache.clear()
+    fake_steam["GetGlobalAchievementPercentagesForApp"] = _rarity(("A", "3.2"))
+    assert steam.get_game_achievements(10)["achievements"][0]["rarity"] == 3.2
+
+
+def test_summary_lists_your_rarest_unlocks_rarest_first(fake_steam):
+    fake_steam["GetPlayerAchievements"] = _player(
+        [{"apiname": f"U{i}", "achieved": 1, "unlocktime": i} for i in range(7)]
+        + [{"apiname": "LOCKED", "achieved": 0, "unlocktime": 0}, {"apiname": "UNRATED", "achieved": 1, "unlocktime": 9}]
+    )
+    fake_steam["GetGlobalAchievementPercentagesForApp"] = _rarity(("LOCKED", "0.1"), *[(f"U{i}", str(50 - i)) for i in range(7)])
+    rarest = steam.get_all_achievements_summary()[0]["rarest"]
+    assert [r["apiname"] for r in rarest] == ["U6", "U5", "U4", "U3", "U2"]
+    assert rarest[0] == {"apiname": "U6", "display_name": "U6", "icon": "", "unlocktime": 6, "rarity": 44.0}

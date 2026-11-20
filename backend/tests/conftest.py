@@ -41,6 +41,7 @@ def fake_steam(monkeypatch):
         "GetSchemaForGame": (200, {"game": {"availableGameStats": {"achievements": []}}}),
         "GetPlayerSummaries": (200, {"response": {"players": [{"steamid": "1"}]}}),
         "GetItems": (200, {"response": {"store_items": []}}),
+        "GetGlobalAchievementPercentagesForApp": (200, {"achievementpercentages": {"achievements": []}}),
     }
 
     def fake_get(url, params=None, timeout=None):

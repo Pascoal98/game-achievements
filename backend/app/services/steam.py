@@ -19,6 +19,9 @@ _ART_MAX_AGE = 30 * 86_400
 _ART_BATCH = 200
 # Achievement names and icons rarely change once a game ships.
 _SCHEMA_MAX_AGE = 7 * 86_400
+# Global unlock shares drift slowly; a day is fresh enough and saves a call per game.
+_RARITY_MAX_AGE = 86_400
+_RAREST_PER_GAME = 5
 _STORE_ASSETS = "https://shared.akamai.steamstatic.com/store_item_assets/"
 # GetSchemaForGame still hands out this host, which 404s for newer games; community_assets serves old and new.
 _OLD_ICON_HOST = "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/"
@@ -130,6 +133,37 @@ def get_game_schema(app_id: int) -> dict:
     store.put_many("schema", {str(app_id): schema})
     return schema
 
+def _percent(value) -> float | None:
+    try:
+        percent = float(value)
+    except (TypeError, ValueError):
+        return None
+    return percent if 0 <= percent <= 100 else None
+
+def get_global_rarity(app_id: int) -> dict[str, float]:
+    """Share of all players (0-100) holding each achievement, by apiname. No key needed.
+
+    A failed fetch is logged and returns {} without being stored, so rarity is simply missing until the next try.
+    """
+    stored = store.get_many("rarity", [str(app_id)], _RARITY_MAX_AGE)
+    if stored:
+        return stored[str(app_id)]
+    url = "https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/"
+    try:
+        r = requests.get(url, params={"gameid": app_id}, timeout=10)
+        r.raise_for_status()
+        achievements = r.json().get("achievementpercentages", {}).get("achievements", [])
+    except Exception:
+        logger.warning("Rarity lookup failed for app_id=%s", app_id, exc_info=True)
+        return {}
+    rarity = {
+        a["name"]: percent
+        for a in achievements
+        if isinstance(a, dict) and isinstance(a.get("name"), str) and (percent := _percent(a.get("percent"))) is not None
+    }
+    store.put_many("rarity", {str(app_id): rarity})
+    return rarity
+
 def get_game_achievements(app_id: int) -> dict:
     cached = _achievements_cache.get(app_id)
     if cached and time.time() - cached[0] < _CACHE_TTL_SECONDS:
@@ -147,6 +181,7 @@ def get_game_achievements(app_id: int) -> dict:
 
     achievements = r.json().get("playerstats", {}).get("achievements", [])
     schema = get_game_schema(app_id)
+    rarity = get_global_rarity(app_id)
 
     enriched = []
     for a in achievements:
@@ -160,6 +195,7 @@ def get_game_achievements(app_id: int) -> dict:
             "unlocktime": a.get("unlocktime", 0),
             "icon": meta.get("icon", ""),
             "icongray": meta.get("icongray", ""),
+            "rarity": rarity.get(name),
         })
 
     result = {
@@ -183,6 +219,7 @@ def _summarize_game(app_id: int) -> dict | None:
         key=lambda a: a["unlocktime"],
         reverse=True,
     )
+    rarest = sorted((a for a in unlocked if a["rarity"] is not None), key=lambda a: a["rarity"])
     return {
         "appid": app_id,
         "unlocked": data["unlocked"],
@@ -197,6 +234,10 @@ def _summarize_game(app_id: int) -> dict | None:
                 "unlocktime": a["unlocktime"],
             }
             for a in unlocked[:_RECENT_UNLOCKS_PER_GAME]
+        ],
+        "rarest": [
+            {key: a[key] for key in ("apiname", "display_name", "icon", "unlocktime", "rarity")}
+            for a in rarest[:_RAREST_PER_GAME]
         ],
     }
 
