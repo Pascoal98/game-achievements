@@ -19,11 +19,14 @@ export default function CurrentlyPlaying({ games, summary, now, onSelect, childr
     const playedToday = now - game.rtime_last_played * 1000 < DAY_MS;
 
     return (
-        <section className="relative grid min-h-[420px] overflow-hidden rounded-[20px] bg-bg-surface lg:grid-cols-[minmax(0,1fr)_360px]">
-            {art && (
+        // Without art there is nothing to fill a tall stage, so it becomes a plain card sized to its content.
+        <section className={`relative grid overflow-hidden rounded-[20px] bg-bg-surface lg:grid-cols-[minmax(0,1fr)_360px] ${
+            art ? 'min-h-[420px]' : 'border border-border'
+        }`}>
+            {art && <>
                 <img src={art} alt="" onError={() => setArtIndex(i => i + 1)} className="absolute inset-0 h-full w-full object-cover object-[center_30%]" />
-            )}
-            <span className="absolute inset-0 bg-[linear-gradient(90deg,rgb(20_20_21/0.92),rgb(20_20_21/0.55)_45%,rgb(20_20_21/0.2)_70%),linear-gradient(0deg,rgb(20_20_21/0.9),rgb(20_20_21/0)_55%)]" />
+                <span className="absolute inset-0 bg-[linear-gradient(90deg,rgb(20_20_21/0.92),rgb(20_20_21/0.55)_45%,rgb(20_20_21/0.2)_70%),linear-gradient(0deg,rgb(20_20_21/0.9),rgb(20_20_21/0)_55%)]" />
+            </>}
             <div className="relative flex flex-col justify-end p-6 md:p-10">
                 <div className="flex items-center gap-2 text-[13px] text-text">
                     {playedToday && <span data-testid="played-today" className="h-2 w-2 rounded-full bg-accent" />}

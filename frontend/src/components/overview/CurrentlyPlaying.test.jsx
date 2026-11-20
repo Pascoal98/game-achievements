@@ -53,3 +53,12 @@ test('with nothing played, latest unlocks still render on their own', () => {
     expect(screen.getByText('Latest unlocks')).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Currently playing' })).toBeNull();
 });
+
+test('when every art source fails, the stage drops its art height instead of showing an empty box', () => {
+    const { container } = render(<CurrentlyPlaying games={[rl]} summary={{}} now={now} onSelect={() => {}} />);
+    const stage = container.querySelector('section');
+    expect(stage.classList).toContain('min-h-[420px]');
+    // Steam games have hero then header guesses; fail each in turn.
+    while (container.querySelector('img')) fireEvent.error(container.querySelector('img'));
+    expect(stage.classList).not.toContain('min-h-[420px]');
+});
