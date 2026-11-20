@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +13,14 @@ _CACHE_TTL_SECONDS = 600
 _RECENT_UNLOCKS_PER_GAME = 8
 # Steam calls are I/O-bound; a small pool cuts a cold summary from ~38s without bursting hard enough to get rate limited.
 _SUMMARY_WORKERS = 8
+# Store art per appid; {} records "no assets" so it isn't asked for again.
+# ponytail: no TTL, so a game's new key art shows only after a restart; add one if that matters.
+_art_cache: dict[int, dict] = {}
+_ART_BATCH = 200
+_STORE_ASSETS = "https://shared.akamai.steamstatic.com/store_item_assets/"
+# GetSchemaForGame still hands out this host, which 404s for newer games; community_assets serves old and new.
+_OLD_ICON_HOST = "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/"
+_ICON_HOST = "https://shared.akamai.steamstatic.com/community_assets/images/apps/"
 
 def get_owned_games() -> list:
     url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -24,9 +33,61 @@ def get_owned_games() -> list:
     r = requests.get(url, params=params, timeout=10)
     r.raise_for_status()
     games = r.json().get("response", {}).get("games", [])
+    art = get_store_art([game["appid"] for game in games])
     for game in games:
         game["source"] = "steam"
+        if art.get(game["appid"]):
+            game["art"] = art[game["appid"]]
     return sorted(games, key=lambda x: x.get("playtime_forever", 0), reverse=True)
+
+def _art_from_assets(assets) -> dict:
+    """Absolute cover, hero and header URLs from a store item's assets; kinds the game lacks are left out."""
+    if not isinstance(assets, dict):
+        return {}
+    url_format = assets.get("asset_url_format")
+    if not isinstance(url_format, str) or "${FILENAME}" not in url_format:
+        return {}
+
+    def url(*keys: str) -> str | None:
+        for key in keys:
+            name = assets.get(key)
+            if isinstance(name, str) and name:
+                return _STORE_ASSETS + url_format.replace("${FILENAME}", name)
+        return None
+
+    art = {"cover": url("library_capsule_2x", "library_capsule"), "hero": url("library_hero"), "header": url("header")}
+    return {kind: link for kind, link in art.items() if link}
+
+def get_store_art(app_ids: list[int]) -> dict[int, dict]:
+    """Store art by appid. Newer games keep art under hashed paths, so it can't be guessed from the appid.
+
+    A failed store call is logged and skipped: the library still loads and the frontend falls back to guessed URLs.
+    """
+    missing = [a for a in app_ids if a not in _art_cache]
+    url = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/"
+    for start in range(0, len(missing), _ART_BATCH):
+        batch = missing[start:start + _ART_BATCH]
+        request = {
+            "ids": [{"appid": a} for a in batch],
+            "context": {"language": "english", "country_code": "US"},
+            "data_request": {"include_assets": True},
+        }
+        try:
+            r = requests.get(url, params={"input_json": json.dumps(request)}, timeout=10)
+            r.raise_for_status()
+            items = r.json().get("response", {}).get("store_items", [])
+        except Exception:
+            logger.warning("Store art lookup failed for %d games", len(batch), exc_info=True)
+            continue
+        for a in batch:
+            _art_cache[a] = {}
+        for item in items:
+            if isinstance(item, dict) and item.get("appid") in _art_cache:
+                _art_cache[item["appid"]] = _art_from_assets(item.get("assets"))
+    return {a: _art_cache[a] for a in app_ids if _art_cache.get(a)}
+
+def _icon_url(url: str) -> str:
+    return _ICON_HOST + url[len(_OLD_ICON_HOST):] if url.startswith(_OLD_ICON_HOST) else url
 
 def get_now_playing() -> dict:
     """Returns the game the user is in right now; Steam only sends gameid while in-game."""
@@ -54,8 +115,8 @@ def get_game_schema(app_id: int) -> dict:
         a["name"]: {
             "display_name": a.get("displayName", ""),
             "description": a.get("description", ""),
-            "icon": a.get("icon", ""),
-            "icongray": a.get("icongray", ""),
+            "icon": _icon_url(a.get("icon", "")),
+            "icongray": _icon_url(a.get("icongray", "")),
         }
         for a in achievements
     }

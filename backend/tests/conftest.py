@@ -25,8 +25,10 @@ class FakeResponse:
 @pytest.fixture(autouse=True)
 def clear_cache():
     steam._achievements_cache.clear()
+    steam._art_cache.clear()
     yield
     steam._achievements_cache.clear()
+    steam._art_cache.clear()
 
 
 @pytest.fixture
@@ -37,6 +39,7 @@ def fake_steam(monkeypatch):
         "GetPlayerAchievements": (200, {"playerstats": {"achievements": []}}),
         "GetSchemaForGame": (200, {"game": {"availableGameStats": {"achievements": []}}}),
         "GetPlayerSummaries": (200, {"response": {"players": [{"steamid": "1"}]}}),
+        "GetItems": (200, {"response": {"store_items": []}}),
     }
 
     def fake_get(url, params=None, timeout=None):

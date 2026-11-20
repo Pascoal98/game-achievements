@@ -117,3 +117,56 @@ def test_summary_skips_a_game_whose_fetch_fails(fake_steam, monkeypatch):
 
 def test_owned_games_are_tagged_as_steam(fake_steam):
     assert steam.get_owned_games()[0]["source"] == "steam"
+
+
+def _store_items(*items):
+    return (200, {"response": {"store_items": list(items)}})
+
+
+ASSET_BASE = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/"
+
+
+def test_owned_games_carry_store_art_from_hashed_paths(fake_steam):
+    # Newer games keep art under hashed folders, so the plain CDN path guess 404s for them.
+    fake_steam["GetItems"] = _store_items({"appid": 10, "assets": {
+        "asset_url_format": "steam/apps/10/${FILENAME}?t=7",
+        "library_capsule": "aa/library_capsule.jpg",
+        "library_capsule_2x": "aa/library_capsule_2x.jpg",
+        "library_hero": "bb/library_hero.jpg",
+        "header": "cc/header.jpg",
+    }})
+    assert steam.get_owned_games()[0]["art"] == {
+        "cover": f"{ASSET_BASE}aa/library_capsule_2x.jpg?t=7",
+        "hero": f"{ASSET_BASE}bb/library_hero.jpg?t=7",
+        "header": f"{ASSET_BASE}cc/header.jpg?t=7",
+    }
+
+
+def test_store_art_falls_back_to_the_small_cover_and_skips_missing_kinds(fake_steam):
+    fake_steam["GetItems"] = _store_items({"appid": 10, "assets": {
+        "asset_url_format": "steam/apps/10/${FILENAME}",
+        "library_capsule": "library_600x900.jpg",
+    }})
+    assert steam.get_owned_games()[0]["art"] == {"cover": f"{ASSET_BASE}library_600x900.jpg"}
+
+
+def test_games_without_store_assets_have_no_art(fake_steam):
+    fake_steam["GetItems"] = _store_items({"appid": 10, "success": 15})
+    assert "art" not in steam.get_owned_games()[0]
+
+
+def test_store_outage_still_returns_the_library(fake_steam):
+    fake_steam["GetItems"] = (500, {})
+    games = steam.get_owned_games()
+    assert [g["appid"] for g in games] == [10]
+    assert "art" not in games[0]
+
+
+def test_achievement_icons_move_off_the_retired_cdn_host(fake_steam):
+    # steamcdn-a.akamaihd.net 404s for newer games; the community_assets host serves old and new.
+    fake_steam["GetPlayerAchievements"] = _player([{"apiname": "A", "achieved": 1, "unlocktime": 5}])
+    old = "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/10/"
+    fake_steam["GetSchemaForGame"] = _schema([{"name": "A", "displayName": "Alpha", "icon": f"{old}abc.jpg", "icongray": f"{old}def.jpg"}])
+    a = steam.get_game_achievements(10)["achievements"][0]
+    assert a["icon"] == "https://shared.akamai.steamstatic.com/community_assets/images/apps/10/abc.jpg"
+    assert a["icongray"] == "https://shared.akamai.steamstatic.com/community_assets/images/apps/10/def.jpg"
