@@ -4,7 +4,7 @@ A personal trophy cabinet for your Steam library, plus PS3 games played in [RPCS
 
 It's two small apps. A FastAPI backend proxies the Steam Web API so your API key never reaches the browser, and a React frontend renders the dashboard.
 
-![The cabinet: currently playing, latest unlocks, perfect games, where you play and the unlock heat map](docs/screenshots/cabinet.png)
+![The cabinet: currently playing, latest unlocks, perfect games, rarest achievements, where you play and the unlock heat map](docs/screenshots/cabinet.png)
 
 ## What you get
 
