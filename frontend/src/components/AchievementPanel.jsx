@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useAchievements } from '../hooks/useAchievements';
 import { assetUrl, backdropSource } from '../lib/library';
 import { BASE } from '../api/steam';
-import { formatHours, formatRelativeTime, formatDate } from '../lib/format';
+import { formatHours, formatRelativeTime, formatDate, formatRarity } from '../lib/format';
 
 function AchievementSkeleton() {
     return (
@@ -137,8 +137,11 @@ export default function AchievementPanel({ game, now, onBack }) {
                                 <span className={`block truncate text-sm ${a.achieved ? 'text-text-bright' : 'text-text'}`}>{a.display_name}</span>
                                 {a.description && <span className="mt-0.5 block truncate text-xs text-text-muted">{a.description}</span>}
                             </div>
-                            {a.achieved && a.unlocktime > 0 && (
-                                <span className="flex-shrink-0 font-mono text-xs tabular-nums text-text-muted">{formatDate(a.unlocktime)}</span>
+                            {((a.achieved && a.unlocktime > 0) || a.rarity != null) && (
+                                <span className="flex flex-shrink-0 flex-col items-end gap-0.5 font-mono text-xs tabular-nums text-text-muted">
+                                    {a.achieved && a.unlocktime > 0 && <span>{formatDate(a.unlocktime)}</span>}
+                                    {a.rarity != null && <span title="Share of all Steam players who have it">{formatRarity(a.rarity)}</span>}
+                                </span>
                             )}
                         </li>
                     ))}

@@ -5,6 +5,7 @@ import CurrentlyPlaying from './CurrentlyPlaying';
 import RecentUnlocksTile from './RecentUnlocksTile';
 import PlatformTile from './PlatformTile';
 import UnlockHeatmapTile from './UnlockHeatmapTile';
+import RarestTile from './RarestTile';
 
 // The stage (currently playing, with latest unlocks inside it) leads; DOM order is also the narrow-screen stacking order.
 const PAGE = 'mx-auto grid max-w-[1440px] grid-cols-1 gap-14 px-4 pt-2 pb-20 md:px-8';
@@ -44,6 +45,7 @@ export default function Overview({ games, loading, error, summary, summaryLoadin
                 />
             </CurrentlyPlaying>
             <PerfectShelf summary={summary} gamesById={gamesById} loading={summaryLoading} error={summaryError} onSelect={onSelect} />
+            <RarestTile summary={summary} gamesById={gamesById} loading={summaryLoading} error={summaryError} onSelect={onSelect} className={CARD} />
             <div className={BOTTOM}>
                 <PlatformTile games={games} className={CARD} />
                 <UnlockHeatmapTile summary={summary} loading={summaryLoading} error={summaryError} className={CARD} />

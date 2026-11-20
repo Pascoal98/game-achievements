@@ -5,7 +5,7 @@ import { formatRelativeTime } from '../../lib/format';
 import { assetUrl } from '../../lib/library';
 import { BASE } from '../../api/steam';
 
-function UnlockIcon({ src }) {
+export function UnlockIcon({ src }) {
     const [failed, setFailed] = useState(false);
     if (!src || failed) return <span className="h-10 w-10 flex-shrink-0 rounded-lg bg-bg-elevated" />;
     return <img src={assetUrl(src, BASE)} alt="" width={40} height={40} loading="lazy" onError={() => setFailed(true)} className="h-10 w-10 flex-shrink-0 rounded-lg object-cover" />;

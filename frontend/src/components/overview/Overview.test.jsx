@@ -26,3 +26,11 @@ test('currently playing comes first, then latest unlocks, then the shelf', () =>
     render(<Overview games={played} loading={false} error={null} summary={summary} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
     expect(screen.getAllByRole('heading').map(h => h.textContent).slice(0, 3)).toEqual(['Currently playing', 'Latest unlocks', '0 perfect games']);
 });
+
+test('rarest achievements sit between the shelf and the playtime split', () => {
+    const rare = { ...summary, 999: { appid: 999, unlocked: 1, total: 2, rarest: [{ apiname: 'x', display_name: 'X', icon: '', unlocktime: 1, rarity: 1.5 }] } };
+    render(<Overview games={games} loading={false} error={null} summary={rare} summaryLoading={false} summaryError={null} now={10_000} onSelect={() => {}} />);
+    const headings = screen.getAllByRole('heading').map(h => h.textContent);
+    expect(headings.indexOf('Rarest achievements')).toBe(headings.indexOf('Where you play') - 1);
+    expect(headings.indexOf('Rarest achievements')).toBeGreaterThan(headings.findIndex(h => /perfect games/.test(h)));
+});

@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import {
     platformSplit, mergeRecentUnlocks, unlockHeatmap,
-    perfectGames, nextToComplete, achievementCounts, mostRecentlyPlayed,
+    perfectGames, nextToComplete, achievementCounts, mostRecentlyPlayed, rarestUnlocks,
 } from './stats';
 
 test('platformSplit counts all Steam playtime as one Steam entry, including hours with no device recorded', () => {
@@ -102,4 +102,11 @@ test('mostRecentlyPlayed picks the latest and is null when nothing was played', 
     expect(mostRecentlyPlayed([{ appid: 1, rtime_last_played: 5 }, { appid: 'rpcs3-A', rtime_last_played: 9 }]).appid).toBe('rpcs3-A');
     expect(mostRecentlyPlayed([{ appid: 1, rtime_last_played: 0 }])).toBeNull();
     expect(mostRecentlyPlayed([])).toBeNull();
+});
+
+test('rarestUnlocks orders across games by rarity, rarest first, and respects n', () => {
+    const r = (apiname, rarity) => ({ apiname, display_name: apiname, icon: '', unlocktime: 1, rarity });
+    const summary = { 1: { appid: 1, rarest: [r('a', 0.5), r('b', 9)] }, 2: { appid: 2, rarest: [r('c', 2)] }, 'rpcs3-X': { appid: 'rpcs3-X' } };
+    const rarest = rarestUnlocks(summary, { 1: { name: 'One' } }, 2);
+    expect(rarest.map(u => [u.apiname, u.appid, u.gameName])).toEqual([['a', 1, 'One'], ['c', 2, '']]);
 });

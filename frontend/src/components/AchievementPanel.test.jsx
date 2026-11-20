@@ -43,3 +43,25 @@ test('an in-progress panel progress bar is neutral, not brass', async () => {
     const fill = container.querySelector('[style*="width: 12%"]');
     expect(fill.className).not.toMatch(/accent|success/);
 });
+
+test('each achievement shows the share of players who have it, when Steam knows it', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+            has_achievements: true,
+            unlocked: 1,
+            total: 3,
+            achievements: [
+                { apiname: 'a', achieved: 1, display_name: 'First', description: '', unlocktime: 5, icon: '', icongray: '', rarity: 3.2 },
+                { apiname: 'b', achieved: 0, display_name: 'Second', description: '', unlocktime: 0, icon: '', icongray: '', rarity: 0.04 },
+                { apiname: 'c', achieved: 0, display_name: 'Third', description: '', unlocktime: 0, icon: '', icongray: '', rarity: null },
+            ],
+        }),
+    })));
+    const game = { appid: 730, name: 'CS2', source: 'steam', playtime_forever: 60, rtime_last_played: 0 };
+    render(<AchievementPanel game={game} now={10_000} onBack={() => {}} />);
+    await screen.findByText('First');
+    expect(screen.getByText('3.2%')).toBeTruthy();
+    expect(screen.getByText('<0.1%')).toBeTruthy();
+    expect(screen.getAllByText(/%$/)).toHaveLength(3); // the two rarities plus the progress figure
+});

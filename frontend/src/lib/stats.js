@@ -63,6 +63,18 @@ export function mergeRecentUnlocks(summary, gamesById, n) {
         .slice(0, n);
 }
 
+// RPCS3 rows have no `rarest`: there is no global trophy data for them.
+export function rarestUnlocks(summary, gamesById, n) {
+    return Object.values(summary)
+        .flatMap(item => (item.rarest ?? []).map(u => ({
+            appid: item.appid,
+            gameName: gamesById[item.appid]?.name ?? '',
+            ...u,
+        })))
+        .sort((a, b) => a.rarity - b.rarity)
+        .slice(0, n);
+}
+
 // Indexed [Date#getDay()][Date#getHours()] in the viewer's local time.
 export function unlockHeatmap(summary) {
     const grid = Array.from({ length: 7 }, () => Array(24).fill(0));

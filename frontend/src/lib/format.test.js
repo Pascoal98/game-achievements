@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { formatHours, formatRelativeTime, formatDate } from './format';
+import { formatHours, formatRelativeTime, formatDate, formatRarity } from './format';
 
 const NOW = Date.UTC(2026, 10, 4, 12, 0, 0);
 const nowSec = NOW / 1000;
@@ -25,4 +25,10 @@ test('relative time: picks largest whole unit', () => {
 
 test('formatDate renders a short US date', () => {
     expect(formatDate(nowSec)).toBe('Nov 4, 2026');
+});
+
+test('formatRarity keeps one decimal and floors tiny shares at <0.1%', () => {
+    expect(formatRarity(74.94)).toBe('74.9%');
+    expect(formatRarity(3.2)).toBe('3.2%');
+    expect(formatRarity(0.04)).toBe('<0.1%');
 });

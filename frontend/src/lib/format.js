@@ -28,3 +28,8 @@ export function formatRelativeTime(unixSeconds, nowMs) {
 export function formatDate(unixSeconds) {
     return new Date(unixSeconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
+
+// Share of all players (0-100). One decimal everywhere, so tiny shares read as "<0.1%" instead of "0.0%".
+export function formatRarity(percent) {
+    return percent < 0.1 ? '<0.1%' : `${percent.toFixed(1)}%`;
+}
