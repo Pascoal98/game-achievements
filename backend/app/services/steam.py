@@ -3,6 +3,7 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 import requests
+from app import store
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -13,10 +14,11 @@ _CACHE_TTL_SECONDS = 600
 _RECENT_UNLOCKS_PER_GAME = 8
 # Steam calls are I/O-bound; a small pool cuts a cold summary from ~38s without bursting hard enough to get rate limited.
 _SUMMARY_WORKERS = 8
-# Store art per appid; {} records "no assets" so it isn't asked for again.
-# ponytail: no TTL, so a game's new key art shows only after a restart; add one if that matters.
-_art_cache: dict[int, dict] = {}
+# Kept in the store; {} records "no assets" so it isn't asked for again. A month lets new key art arrive eventually.
+_ART_MAX_AGE = 30 * 86_400
 _ART_BATCH = 200
+# Achievement names and icons rarely change once a game ships.
+_SCHEMA_MAX_AGE = 7 * 86_400
 _STORE_ASSETS = "https://shared.akamai.steamstatic.com/store_item_assets/"
 # GetSchemaForGame still hands out this host, which 404s for newer games; community_assets serves old and new.
 _OLD_ICON_HOST = "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/"
@@ -63,7 +65,8 @@ def get_store_art(app_ids: list[int]) -> dict[int, dict]:
 
     A failed store call is logged and skipped: the library still loads and the frontend falls back to guessed URLs.
     """
-    missing = [a for a in app_ids if a not in _art_cache]
+    known = {int(k): v for k, v in store.get_many("art", [str(a) for a in app_ids], _ART_MAX_AGE).items()}
+    missing = [a for a in app_ids if a not in known]
     url = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/"
     for start in range(0, len(missing), _ART_BATCH):
         batch = missing[start:start + _ART_BATCH]
@@ -79,12 +82,13 @@ def get_store_art(app_ids: list[int]) -> dict[int, dict]:
         except Exception:
             logger.warning("Store art lookup failed for %d games", len(batch), exc_info=True)
             continue
-        for a in batch:
-            _art_cache[a] = {}
+        fetched = {a: {} for a in batch}
         for item in items:
-            if isinstance(item, dict) and item.get("appid") in _art_cache:
-                _art_cache[item["appid"]] = _art_from_assets(item.get("assets"))
-    return {a: _art_cache[a] for a in app_ids if _art_cache.get(a)}
+            if isinstance(item, dict) and item.get("appid") in fetched:
+                fetched[item["appid"]] = _art_from_assets(item.get("assets"))
+        store.put_many("art", {str(a): art for a, art in fetched.items()})
+        known.update(fetched)
+    return {a: known[a] for a in app_ids if known.get(a)}
 
 def _icon_url(url: str) -> str:
     return _ICON_HOST + url[len(_OLD_ICON_HOST):] if url.startswith(_OLD_ICON_HOST) else url
@@ -103,15 +107,18 @@ def get_now_playing() -> dict:
     return {"appid": appid, "name": players[0].get("gameextrainfo")}
 
 def get_game_schema(app_id: int) -> dict:
-    """Fetches achievement names and descriptions for a game."""
+    """Achievement names, descriptions and icons for a game; a failed fetch returns {} and isn't stored."""
+    stored = store.get_many("schema", [str(app_id)], _SCHEMA_MAX_AGE)
+    if stored:
+        return stored[str(app_id)]
     url = "http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/"
     params = {"appid": app_id, "key": settings.steam_api_key}
     r = requests.get(url, params=params, timeout=10)
     if r.status_code != 200:
         return {}
     achievements = r.json().get("game", {}).get("availableGameStats", {}).get("achievements", [])
-    # Return a dict keyed by apiname for easy lookup
-    return {
+    # Keyed by apiname for easy lookup
+    schema = {
         a["name"]: {
             "display_name": a.get("displayName", ""),
             "description": a.get("description", ""),
@@ -120,6 +127,8 @@ def get_game_schema(app_id: int) -> dict:
         }
         for a in achievements
     }
+    store.put_many("schema", {str(app_id): schema})
+    return schema
 
 def get_game_achievements(app_id: int) -> dict:
     cached = _achievements_cache.get(app_id)

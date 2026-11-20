@@ -170,3 +170,29 @@ def test_achievement_icons_move_off_the_retired_cdn_host(fake_steam):
     a = steam.get_game_achievements(10)["achievements"][0]
     assert a["icon"] == "https://shared.akamai.steamstatic.com/community_assets/images/apps/10/abc.jpg"
     assert a["icongray"] == "https://shared.akamai.steamstatic.com/community_assets/images/apps/10/def.jpg"
+
+
+def test_store_art_survives_a_restart(fake_steam):
+    fake_steam["GetItems"] = _store_items({"appid": 10, "assets": {"asset_url_format": "steam/apps/10/${FILENAME}", "header": "h.jpg"}})
+    steam.get_owned_games()
+    # A fresh process has no in-memory state; the store is all that's left, and the store API is down.
+    fake_steam["GetItems"] = (500, {})
+    assert steam.get_owned_games()[0]["art"] == {"header": f"{ASSET_BASE}h.jpg"}
+
+
+def test_achievement_schema_is_reused_after_the_short_cache_expires(fake_steam):
+    fake_steam["GetPlayerAchievements"] = _player([{"apiname": "A", "achieved": 1, "unlocktime": 5}])
+    fake_steam["GetSchemaForGame"] = _schema([{"name": "A", "displayName": "Alpha"}])
+    steam.get_game_achievements(10)
+    steam._achievements_cache.clear()
+    fake_steam["GetSchemaForGame"] = (500, {})
+    assert steam.get_game_achievements(10)["achievements"][0]["display_name"] == "Alpha"
+
+
+def test_a_failed_schema_fetch_is_not_kept(fake_steam):
+    fake_steam["GetPlayerAchievements"] = _player([{"apiname": "A", "achieved": 1, "unlocktime": 5}])
+    fake_steam["GetSchemaForGame"] = (500, {})
+    assert steam.get_game_achievements(10)["achievements"][0]["display_name"] == "A"
+    steam._achievements_cache.clear()
+    fake_steam["GetSchemaForGame"] = _schema([{"name": "A", "displayName": "Alpha"}])
+    assert steam.get_game_achievements(10)["achievements"][0]["display_name"] == "Alpha"

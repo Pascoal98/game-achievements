@@ -12,3 +12,5 @@ __pycache__/
 .claude/
 .superpowers/
 docs/superpowers/
+# Local SQLite store (cached Steam data, daily playtime)
+backend/data/

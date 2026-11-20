@@ -6,6 +6,7 @@ os.environ.setdefault("STEAM_ID", "1")
 
 import pytest
 
+from app.config import settings
 from app.services import steam
 
 
@@ -23,12 +24,12 @@ class FakeResponse:
 
 
 @pytest.fixture(autouse=True)
-def clear_cache():
+def clear_cache(tmp_path, monkeypatch):
+    # Each test gets an empty store, so nothing leaks between tests or into backend/data.
+    monkeypatch.setattr(settings, "db_path", str(tmp_path / "cache.db"))
     steam._achievements_cache.clear()
-    steam._art_cache.clear()
     yield
     steam._achievements_cache.clear()
-    steam._art_cache.clear()
 
 
 @pytest.fixture
