@@ -38,14 +38,24 @@ test('renders nothing when no game has been played', () => {
     expect(container.innerHTML).toBe('');
 });
 
-test('a dot marks a game played within the last day', () => {
-    render(<CurrentlyPlaying games={[sly]} summary={summary} now={now} onSelect={() => {}} />);
-    expect(screen.getByTestId('played-today')).toBeTruthy();
+test('the game Steam says you are in right now takes the stage, marked live with a dot', () => {
+    render(<CurrentlyPlaying games={[rl, sly]} summary={summary} now={now} liveAppid={252950} onSelect={() => {}} />);
+    expect(screen.getByText('Rocket League')).toBeTruthy();
+    expect(screen.getByText('In game now')).toBeTruthy();
+    expect(screen.queryByText(/^Last played/)).toBeNull();
+    expect(screen.getByTestId('live')).toBeTruthy();
 });
 
-test('no dot for a game last played more than a day ago', () => {
-    render(<CurrentlyPlaying games={[rl]} summary={{}} now={now} onSelect={() => {}} />);
-    expect(screen.queryByTestId('played-today')).toBeNull();
+test('no dot when not in a game, even for a game played an hour ago', () => {
+    render(<CurrentlyPlaying games={[sly]} summary={summary} now={now} liveAppid={null} onSelect={() => {}} />);
+    expect(screen.getByText('Last played 1 hour ago')).toBeTruthy();
+    expect(screen.queryByTestId('live')).toBeNull();
+});
+
+test('a live game missing from the library leaves the last played game on stage', () => {
+    render(<CurrentlyPlaying games={[rl, sly]} summary={summary} now={now} liveAppid={570} onSelect={() => {}} />);
+    expect(screen.getByText('Sly Cooper: Thieves in Time')).toBeTruthy();
+    expect(screen.queryByTestId('live')).toBeNull();
 });
 
 test('with nothing played, latest unlocks still render on their own', () => {

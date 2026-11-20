@@ -12,7 +12,7 @@ const PAGE = 'mx-auto grid max-w-[1440px] grid-cols-1 gap-14 px-4 pt-2 pb-20 md:
 const BOTTOM = 'grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.6fr)]';
 const CARD = 'rounded-2xl border border-border bg-bg-surface p-6';
 
-export default function Overview({ games, loading, error, summary, summaryLoading, summaryError, now, onSelect }) {
+export default function Overview({ games, loading, error, summary, summaryLoading, summaryError, now, liveAppid, onSelect }) {
     const gamesById = useMemo(() => Object.fromEntries(games.map(g => [g.appid, g])), [games]);
 
     if (error) return (
@@ -32,7 +32,7 @@ export default function Overview({ games, loading, error, summary, summaryLoadin
 
     return (
         <div className={PAGE}>
-            <CurrentlyPlaying games={games} summary={summary} now={now} onSelect={onSelect}>
+            <CurrentlyPlaying games={games} summary={summary} now={now} liveAppid={liveAppid} onSelect={onSelect}>
                 <RecentUnlocksTile
                     summary={summary}
                     gamesById={gamesById}

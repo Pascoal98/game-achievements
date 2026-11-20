@@ -5,6 +5,7 @@ import AchievementPanel from '../components/AchievementPanel';
 import Overview from '../components/overview/Overview';
 import { useGames } from '../hooks/useGames';
 import { useAchievementsSummary } from '../hooks/useAchievementsSummary';
+import { useNowPlaying } from '../hooks/useNowPlaying';
 import { initialPanelState, panelReducer, panelKey } from '../lib/panel';
 
 const VIEWS = [
@@ -15,6 +16,7 @@ const VIEWS = [
 export default function Home() {
     const { games, loading, error } = useGames();
     const { summary, loading: summaryLoading, error: summaryError } = useAchievementsSummary();
+    const liveAppid = useNowPlaying();
     const [view, setView] = useState('overview');
     const [panel, dispatchPanel] = useReducer(panelReducer, initialPanelState);
     // One timestamp per page load keeps every "x days ago" consistent and render pure.
@@ -54,6 +56,7 @@ export default function Home() {
                         summaryLoading={summaryLoading}
                         summaryError={summaryError}
                         now={now}
+                        liveAppid={liveAppid}
                         onSelect={openGame}
                     />
                 ) : (

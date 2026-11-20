@@ -4,19 +4,18 @@ import { heroSources } from '../../lib/library';
 import { formatHours, formatRelativeTime } from '../../lib/format';
 import { BASE } from '../../api/steam';
 
-const DAY_MS = 86_400_000;
-
 // The stage: the game's own art fills it, and `children` (latest unlocks) sits on its right.
 // With nothing played yet there is no stage, so the children render on their own.
-export default function CurrentlyPlaying({ games, summary, now, onSelect, children }) {
+// The game Steam says you're in right now (`liveAppid`) beats the last played one.
+export default function CurrentlyPlaying({ games, summary, now, liveAppid, onSelect, children }) {
     const [artIndex, setArtIndex] = useState(0);
-    const game = mostRecentlyPlayed(games);
+    const live = liveAppid != null ? games.find(g => g.appid === liveAppid) : undefined;
+    const game = live ?? mostRecentlyPlayed(games);
     if (!game) return children ?? null;
 
     const art = heroSources(game, BASE)[artIndex];
     const item = summary[game.appid];
     const pct = item?.total > 0 ? (item.unlocked / item.total) * 100 : null;
-    const playedToday = now - game.rtime_last_played * 1000 < DAY_MS;
 
     return (
         // Without art there is nothing to fill a tall stage, so it becomes a plain card sized to its content.
@@ -29,10 +28,10 @@ export default function CurrentlyPlaying({ games, summary, now, onSelect, childr
             </>}
             <div className="relative flex flex-col justify-end p-6 md:p-10">
                 <div className="flex items-center gap-2 text-[13px] text-text">
-                    {playedToday && <span data-testid="played-today" className="h-2 w-2 rounded-full bg-accent" />}
+                    {live && <span data-testid="live" className="h-2 w-2 rounded-full bg-accent" />}
                     <h2 className="m-0 text-[13px] font-medium text-text-bright">Currently playing</h2>
                     <span aria-hidden="true">·</span>
-                    <span>Last played {formatRelativeTime(game.rtime_last_played, now)}</span>
+                    <span>{live ? 'In game now' : `Last played ${formatRelativeTime(game.rtime_last_played, now)}`}</span>
                 </div>
                 <p className="m-0 mt-2 mb-6 max-w-[12ch] text-balance font-display text-[40px] font-medium leading-none tracking-[-0.03em] text-text-bright md:text-[64px]">
                     {game.name}
