@@ -88,3 +88,19 @@ def test_get_image_never_leaves_the_scan(rpcs3):
     assert rpcs3_library.get_image("BCES01284", "icon0") == b"icon0-png"
     assert rpcs3_library.get_image("BCES01284", "trophy", SET, 1) == b"icon-1"
     assert rpcs3_library.get_image("BCES01284", "trophy", UNSTARTED, 0) == b"trp-icon"
+
+
+def test_listing_games_records_todays_playtime(rpcs3, steam_ok, monkeypatch):
+    from datetime import date
+    from app import store
+    monkeypatch.setattr(library, "date", type("D", (), {"today": staticmethod(lambda: date(2026, 11, 20))}))
+    library.get_all_games()
+    assert store.playtime_on("2026-11-20") == {"730": 600, "rpcs3-BCES01284": 789}
+
+
+def test_a_broken_store_never_breaks_the_library(rpcs3, steam_ok, monkeypatch):
+    from app import store
+    def broken(*_):
+        raise OSError("disk full")
+    monkeypatch.setattr(store, "record_playtime", broken)
+    assert len(library.get_all_games()) == 2

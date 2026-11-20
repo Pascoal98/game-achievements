@@ -19,3 +19,10 @@ def test_putting_again_replaces_the_value():
     store.put_many("art", {"10": {"cover": "new"}})
     assert store.get_many("art", ["10"]) == {"10": {"cover": "new"}}
 
+
+def test_one_playtime_row_per_game_per_day_holding_the_latest_value():
+    store.record_playtime("2026-11-20", {"10": 60, "rpcs3-X": 5})
+    store.record_playtime("2026-11-20", {"10": 90})
+    store.record_playtime("2026-11-21", {"10": 120})
+    assert store.playtime_on("2026-11-20") == {"10": 90, "rpcs3-X": 5}
+    assert store.playtime_on("2026-11-21") == {"10": 120}

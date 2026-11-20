@@ -4,7 +4,9 @@ RPCS3 problems are logged and dropped so they never break the Steam data; Steam 
 still propagate so the routes keep answering 502 as before.
 """
 import logging
+from datetime import date
 
+from app import store
 from app.services import steam
 from app.services.rpcs3 import library as rpcs3_library
 
@@ -19,8 +21,17 @@ def _rpcs3_games() -> list:
         return []
 
 
+def _record_playtime(games: list[dict]) -> None:
+    # History can't be backfilled, so every listing records today's numbers; a store failure only costs that.
+    try:
+        store.record_playtime(date.today().isoformat(), {str(g["appid"]): g.get("playtime_forever", 0) for g in games})
+    except Exception:
+        logger.warning("Couldn't record today's playtime", exc_info=True)
+
+
 def get_all_games() -> list[dict]:
     games = steam.get_owned_games() + [rpcs3_library.to_game_dict(g) for g in _rpcs3_games()]
+    _record_playtime(games)
     return sorted(games, key=lambda g: g.get("playtime_forever", 0), reverse=True)
 
 

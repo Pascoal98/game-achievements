@@ -1,4 +1,4 @@
-"""Slow-changing Steam data in SQLite, so they survive restarts.
+"""Slow-changing Steam data and daily playtime in SQLite, so they survive restarts.
 
 A connection per call keeps it safe for the summary's thread pool; each call is a few
 milliseconds, far below the Steam calls it saves.
@@ -19,6 +19,7 @@ def _connect() -> sqlite3.Connection:
     # WAL lets the summary's threads read while one of them writes.
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("CREATE TABLE IF NOT EXISTS cache (kind TEXT, key TEXT, value TEXT NOT NULL, fetched_at REAL NOT NULL, PRIMARY KEY (kind, key))")
+    con.execute("CREATE TABLE IF NOT EXISTS playtime (day TEXT, appid TEXT, minutes INTEGER NOT NULL, PRIMARY KEY (day, appid))")
     return con
 
 
@@ -44,3 +45,16 @@ def put_many(kind: str, values: dict) -> None:
             [(kind, key, json.dumps(value), now) for key, value in values.items()],
         )
 
+
+def record_playtime(day: str, minutes_by_appid: dict) -> None:
+    """One row per game per day; a later call the same day overwrites it, so a day ends on its last reading."""
+    with closing(_connect()) as con, con:
+        con.executemany(
+            "INSERT OR REPLACE INTO playtime (day, appid, minutes) VALUES (?, ?, ?)",
+            [(day, appid, minutes) for appid, minutes in minutes_by_appid.items()],
+        )
+
+
+def playtime_on(day: str) -> dict:
+    with closing(_connect()) as con:
+        return dict(con.execute("SELECT appid, minutes FROM playtime WHERE day = ?", [day]).fetchall())
