@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { coverSources, backdropSource, assetUrl, completionOf, filterAndSortGames } from './library';
+import { coverSources, backdropSource, heroSources, assetUrl, completionOf, filterAndSortGames } from './library';
 
 const opts = (overrides) => ({ search: '', sortBy: 'playtime', onlyWithAchievements: false, ...overrides });
 
@@ -28,6 +28,12 @@ test('backdropSource is the Steam header or the RPCS3 background', () => {
     expect(backdropSource({ appid: 10, source: 'steam' }, 'http://h')).toBe(`${STEAM_CDN}/10/header.jpg`);
     expect(backdropSource(rpcs3Game, 'http://h')).toBe('http://h/rpcs3/images/BCES01284/pic1');
     expect(backdropSource({ ...rpcs3Game, backdrop_url: null }, 'http://h')).toBeNull();
+});
+
+test('heroSources tries the wide Steam hero art before the small header', () => {
+    expect(heroSources({ appid: 10, source: 'steam' }, 'http://h')).toEqual([`${STEAM_CDN}/10/library_hero.jpg`, `${STEAM_CDN}/10/header.jpg`]);
+    expect(heroSources(rpcs3Game, 'http://h')).toEqual(['http://h/rpcs3/images/BCES01284/pic1']);
+    expect(heroSources({ ...rpcs3Game, backdrop_url: null }, 'http://h')).toEqual([]);
 });
 
 test('completionOf handles missing and zero-total', () => {

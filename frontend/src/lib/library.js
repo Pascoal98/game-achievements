@@ -17,6 +17,12 @@ export function backdropSource(game, apiBase) {
     return `${CDN}/${game.appid}/header.jpg`;
 }
 
+// Full-width art needs Steam's wide hero image; the 460px header only stands in when a game has none.
+export function heroSources(game, apiBase) {
+    if (game.source === 'rpcs3') return game.backdrop_url ? [`${apiBase}${game.backdrop_url}`] : [];
+    return [`${CDN}/${game.appid}/library_hero.jpg`, `${CDN}/${game.appid}/header.jpg`];
+}
+
 // RPCS3 images are served by the backend under paths like /rpcs3/images/...; in the browser a bare
 // path would resolve against the frontend's origin, so it needs the API base in front. Steam URLs are already absolute.
 export function assetUrl(src, apiBase) {
